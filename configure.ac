@@ -13,7 +13,8 @@ AC_OUTPUT(Makefile src/Makefile test/Makefile
 		   examples/Makefile
 		   examples/eth/Makefile
 		   examples/markov/Makefile
-		   examples/queue/Makefile,
+		   examples/queue/Makefile
+		   examples/wifi/Makefile,
 		   [date > stamp-h] )
 
 dnl End the configure script.
