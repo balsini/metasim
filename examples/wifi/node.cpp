@@ -7,54 +7,17 @@ using namespace MetaSim;
 /*-----------------------------------------------------*/
 
 Node::Node(const std::string &name,
-           std::pair<double, double> position,
-           double radius) :
+           std::pair<double, double> position) :
   Entity(name)
 {
   _net_interf = nullptr;
   _position = position;
-  _radius = radius;
-
-  register_handler(_recv_evt, this, &Node::onReceive);
-  register_handler(_send_evt, this, &Node::onSend);
-}
-
-std::pair <double, double> Node::position()
-{
-  return _position;
-}
-
-double Node::radius()
-{
-  return _radius;
+  _consumed = 0;
 }
 
 void Node::newRun()
 {
-  _send_evt.post((int)_interval->get());
-}
-
-void Node::endRun()
-{
-}
-
-
-WifiInterface * Node::netInterface()
-{
-  return _net_interf;
-}
-
-void Node::netInterface(WifiInterface * n)
-{
-  _net_interf = n;
-}
-
-void Node::onReceive(Event *e)
-{
-  // simply, record the fact that the message has succesfully been
-  // received.
-
-  DBGTAG(_NODE_DBG, getName() + "::onReceive()");
+  _consumed = 0;
 }
 
 void Node::onMessageReceived(Message *m)
@@ -65,24 +28,28 @@ void Node::onMessageReceived(Message *m)
   DBGTAG(_NODE_DBG, getName() + "::onMessageReceived()");
 }
 
-void Node::setInterval(auto_ptr<RandomVar> i)
+void Source::produce()
 {
-  _interval = i;
-}
+  //std::cout << "Source::produce()" << std::endl;
+  UniformVar len(0,2400);
+  UniformVar toRand(0, _dest.size());
+  int to = toRand.get();
 
-void Node::onSend(Event *e)
-{
-  UniformVar len(100,1500);
-  //UniformVar n(0, _nodes.size());
-  //int i = (int)n.get();
+  //std::cout << this->getName() << ": sending message to :" <<  _dest.at(to)->getName() << std::endl;
+
+  Message * m = new Message((int)len.get(), this, _dest.at(to));
 
   DBGENTER(_NODE_DBG);
+  DBGPRINT("dest node = " << _dest.at(to)->getName());
 
-  //DBGPRINT("dest node = " << _nodes[i]->getName());
+  _net_interf->send(m);
+  _produced++;
+  _prodEvent.post(SIMUL.getTime() + Tick(_at->get()));
+}
 
-  // creates a new message and send it!!
-
-  //Message *m = new Message((int)len.get(), this, _nodes[i]);
-  //_net_interf->send(m);
-  _send_evt.post(SIMUL.getTime() + (Tick)_interval->get());
+void Source::newRun()
+{
+  //std::cout << "Source::newRun()" << std::endl;
+  _produced = 0;
+  _prodEvent.post(Tick(_at->get()));
 }

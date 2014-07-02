@@ -11,40 +11,155 @@
 
 #include <metasim.hpp>
 
+using namespace MetaSim;
+
+class Message;
+class WifiInterface;
+
 #define _NODE_DBG "Node"
 
-class Node : public MetaSim::Entity
+/**
+ * The Node class.
+ * The Node receives messages only if it is the
+ * message's destination.
+ */
+class Node : public Entity
 {
+  int _consumed;
+
+protected:
   WifiInterface * _net_interf;
-
-  std::auto_ptr<MetaSim::RandomVar> _interval;
-
+  std::auto_ptr<RandomVar> _interval;
   std::pair <double, double> _position;
-  double _radius;
 
 public:
-  MetaSim::GEvent<Node> _recv_evt;
-  MetaSim::GEvent<Node> _send_evt;
+  GEvent<Node> _recv_evt;
 
+  /**
+   * Node creator
+   * @param name name of the node
+   * @param position position of the node
+   * @param radius radius of the node
+   */
   Node(const std::string &name,
-       std::pair <double, double> position,
-       double radius);
+       std::pair <double, double> position);
 
-  std::pair <double, double> position();
+  /**
+   * Gets node position
+   * @return node position
+   */
+  std::pair <double, double> position() { return _position; }
+
+  /**
+   * Gets node radius
+   * @return node radius
+   */
   double radius();
 
-  // Net interface management
-  WifiInterface * netInterface();
-  void netInterface(WifiInterface * n);
+  /**
+   * The net interface connected to the node
+   * @returns pointer to the node interface
+   */
+  WifiInterface * netInterface() { return _net_interf; }
+  /**
+   * Sets the node's wifi network interface
+   * @param n WifiInterface pointer
+   */
 
-  void setInterval(std::auto_ptr<MetaSim::RandomVar> i);
+  void netInterface(WifiInterface * n) { _net_interf = n; }
 
-  void onMessageReceived(Message *m);
-  void onReceive(MetaSim::Event *e);
-  void onSend(MetaSim::Event *e);
+  /**
+   * Sets the time interval
+   * @param i time interval random value
+   */
+  void setInterval(std::auto_ptr<RandomVar> i) { _interval = i; }
 
-  void newRun();
-  void endRun();
+  virtual void put() { _consumed++; }
+
+  void onMessageReceived(Message * m);
+
+  virtual void newRun();
+  virtual void endRun() {}
+};
+
+/**
+ * Source node.
+ * It produces messages at random times, with random lengths.
+ * Each message is pushed into node's wireless interface.
+ */
+class Source : public Node
+{
+  /**
+   * @brief _at message production speed
+   */
+  RandomVar * _at;
+  /**
+   * @brief _produced number of produced messages
+   */
+  int _produced;
+
+  /**
+   * @brief _dest destination nodes
+   */
+  std::vector<Node *> _dest;
+
+public:
+  /**
+   * @brief The ProduceEvent class
+   */
+  class ProduceEvent : public Event
+  {
+    /**
+     * @brief _n destination node
+     */
+    Source &_n;
+  public:
+    /**
+     * @brief ProduceEvent constructor
+     * @param n destination node
+     */
+    ProduceEvent(Source &n) : Event(), _n(n) {}
+    /**
+     * @brief doit Performs the action: produces
+     *   and sends message
+     */
+    virtual void doit() { _n.produce(); }
+  };
+
+  /**
+   * @brief _prodEvent event generator
+   */
+  ProduceEvent _prodEvent;
+
+  /**
+   * Source constructor
+   * @param d destination node
+   * @param position node position
+   * @param a message production speed
+   * @param n node name
+   */
+  Source(const std::string &n,
+         std::pair <double, double> position,
+         RandomVar * a) :
+    Node(n, position),
+    _at(a),
+    _produced(0),
+    _prodEvent(*this) {}
+
+  /**
+   * Adds a new destination node
+   * @param n destination node
+   */
+  void addDest(Node * n) { _dest.push_back(n); }
+
+  /**
+   * Produces a message and sends it to the
+   * network interface
+   */
+  void produce();
+
+  virtual void newRun();
+  virtual void endRun() {}
 };
 
 #endif

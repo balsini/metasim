@@ -19,15 +19,8 @@ WifiLink::WifiLink(const std::string &name)
     _isContending(false),
     _isCollision(false),
     _contention_period(10),
-    _message(0),
-    _end_contention_evt(),
-    _collision_evt(),
-    _end_transmission_evt()
-{
-  register_handler(_end_contention_evt, this, &WifiLink::onEndContention);
-  register_handler(_collision_evt, this, &WifiLink::onCollision);
-  register_handler(_end_transmission_evt, this, &WifiLink::onEndTransmission);
-}
+    _message(0)
+{}
 
 WifiLink::~WifiLink()
 {
@@ -55,25 +48,22 @@ void WifiLink::send(Message *m)
 {
 }
 
-void WifiLink::contend(WifiInterface *eth, Message *m)
+void WifiLink::contend(WifiInterface * wifi, Message * m)
 {
   DBGENTER(_ETHLINK_DBG);
 
   if (_isContending) {
-    _end_contention_evt.drop();
+    //_end_contention_evt.drop();
     if (!_isCollision) {
       _isCollision = true;
-      _collision_evt.post(SIMUL.getTime() + 3);
+      //_collision_evt.post(SIMUL.getTime() + 3);
     }
-  }
-  else {
+  } else {
     _isContending = true;
     _message = m;
-    _end_contention_evt.post(SIMUL.getTime() + _contention_period);
+    //_end_contention_evt.post(SIMUL.getTime() + _contention_period);
   }
-  _contending.push_back(eth);
-
-
+  _contending.push_back(wifi);
 }
 
 void WifiLink::onEndContention(Event *e)
@@ -82,7 +72,7 @@ void WifiLink::onEndContention(Event *e)
 
   _isContending = false;
   _isBusy = true;
-  _end_transmission_evt.post(SIMUL.getTime() + _message->length());
+  //_end_transmission_evt.post(SIMUL.getTime() + _message->length());
 
   _contending.clear();
 }

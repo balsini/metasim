@@ -37,10 +37,6 @@ class WifiLink : public Link
   std::vector<Node *> _nodes;
 
 public:
-  MetaSim::GEvent<WifiLink> _end_contention_evt;
-  MetaSim::GEvent<WifiLink> _collision_evt;
-  MetaSim::GEvent<WifiLink> _end_transmission_evt;
-
   WifiLink(const std::string &name);
   virtual ~WifiLink();
 

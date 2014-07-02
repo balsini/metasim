@@ -8,6 +8,8 @@
 class Node;
 class NetInterface;
 
+#include "netinterface.hpp"
+
 class Message
 {
   int _len;
@@ -26,7 +28,7 @@ class Message
   NetInterface *_src_net_interf;
 
 public:
-  Message(int l, Node *s, Node *d);
+  Message(int l, Node * s, Node * d);
 
   void setStartTime(MetaSim::Tick t);
   MetaSim::Tick getStartTime();

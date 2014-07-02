@@ -17,13 +17,19 @@ NetInterface::~NetInterface()
 {
 }
 
-WifiInterface::WifiInterface(const std::string &name, Node * n) :
+WifiInterface::WifiInterface(const std::string &name, double radius, Node * n) :
   NetInterface(name, n)
+  //_collision_evt(),
+  //_start_trans_evt(),
+  //_end_trans_evt()
 {
   //std::cout << "WifiInterface::WifiInterface: Registering handler" << std::endl;
 
-  register_handler(_trans_evt, this, &WifiInterface::onTransmit);
+  //register_handler(_collision_evt, this, &WifiInterface::onCollision);
+  //register_handler(_start_trans_evt, this, &WifiInterface::onStartTrans);
+  //register_handler(_end_trans_evt, this, &WifiInterface::onEndTrans);
 
+  _radius = radius;
   _coll = 0;
 
   //std::cout << "WifiInterface::WifiInterface: DONE" << std::endl;
@@ -36,7 +42,7 @@ void WifiInterface::newRun()
 {
   vector<Message *>::iterator i;
 
-  _queue.clear();
+  _out_queue.clear();
   for (i = _received.begin(); i != _received.end(); ++i) delete (*i);
 
   _received.clear();
@@ -64,11 +70,11 @@ void WifiInterface::send(Message *m)
 {
   DBGENTER(_ETHINTER_DBG);
 
-  _queue.push_back(m);
+  _out_queue.push_back(m);
 
-  if (_queue.size() == 1) _trans_evt.process();
-  else
-    DBGPRINT("Message enqueued");
+  //if (_queue.size() == 1) _trans_evt.process();
+  //else
+  //  DBGPRINT("Message enqueued");
 
 
 }
@@ -77,17 +83,17 @@ void WifiInterface::onTransmit(Event *e)
 {
   DBGENTER(_ETHINTER_DBG);
 
-  if (_link->isBusy()) onCollision();
-  else _link->contend(this, _queue.front());
-
-
+  if (_link->isBusy())
+    onCollision();
+  else
+    _link->contend(this, _out_queue.front());
 }
 
 void WifiInterface::onCollision()
 {
   DBGENTER(_ETHINTER_DBG);
 
-  _trans_evt.post(SIMUL.getTime() + nextTransTime());
+  //_trans_evt.post(SIMUL.getTime() + nextTransTime());
 
 
 }
@@ -96,14 +102,12 @@ void WifiInterface::onMessageSent(Message *m)
 {
   DBGENTER(_ETHINTER_DBG);
 
-  _queue.pop_front();
+  _out_queue.pop_front();
 
   _coll = 0;
   _backoff = _cont_per;
 
-  if (!_queue.empty()) _trans_evt.process();
-
-
+  //if (!_queue.empty()) _trans_evt.process();
 }
 
 Tick WifiInterface::nextTransTime()
@@ -131,13 +135,11 @@ void WifiInterface::onMessageReceived(Message *m)
   }
   else
     _received.push_back(m);
-
-
 }
 
 Message * WifiInterface::receive(Node *n)
 {
-  DBGTAG(_ETHINTER_DBG, getName() + "::receive()");
+  DBGTAG(_ETHINTER_DBG, getName() + "::get()");
 
   vector<Message *>::iterator i = _received.begin();
   Message *m = NULL;
