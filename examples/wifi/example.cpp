@@ -40,6 +40,16 @@ int main()
 
   // First, generates the nodes inside the matrix
 
+  /************
+   *
+   * o o o o o
+   * o x x x o
+   * o x x x o
+   * o x x x o
+   * o o o o o
+   *
+   ************/
+
   for (int c=1; c<COLUMNS-1; ++c) {
     for (int r=1; r<ROWS-1; ++r)
       experiment.addNode(std::make_pair(r, c), 1.1);
@@ -48,46 +58,61 @@ int main()
   // Now, generates the sinks and associates them to
   // the sources
 
+  /************
+   *
+   * o x x x o
+   * x o o o x
+   * x o o o x
+   * x o o o x
+   * o x x x o
+   *
+   ************/
+
   for (int c=1; c<COLUMNS-1; ++c) {
     Node * n = experiment.addNode(std::make_pair(ROWS-1, c),
                                   1.1);
     Source * s = experiment.addNode(std::make_pair(0, c),
-                       1.1,
-                       &at);
+                                    1.1,
+                                    &at);
     s->addDest(n);
   }
   for (int r=1; r<ROWS-1; ++r) {
     Node * n = experiment.addNode(std::make_pair(r, COLUMNS-1),
                                   1.1);
     Source * s = experiment.addNode(std::make_pair(r, 0),
-                       1.1,
-                       &at);
+                                    1.1,
+                                    &at);
     s->addDest(n);
   }
 
+  // Now the corners
 
-  Node * n1 = experiment.addNode(std::make_pair(COLUMNS-1, 0),
-                                1.1);
-  Node * n2 = experiment.addNode(std::make_pair(ROWS-1, 0),
-                                1.1);
-  Source * s = experiment.addNode(std::make_pair(0, 0),
-                     1.1,
-                     &at);
-  s->addDest(n1);
-  s->addDest(n2);
+  /************
+   *
+   * x o o o x
+   * o o o o o
+   * o o o o o
+   * o o o o o
+   * x o o o x
+   *
+   ************/
 
-  Node * nrc = experiment.addNode(std::make_pair(ROWS-1, COLUMNS-1),
-                                1.1);
+  Node * nbr = experiment.addNode(std::make_pair(ROWS-1, COLUMNS-1),
+                                  1.1);
 
-  Source * s1 = experiment.addNode(std::make_pair(ROWS-1, 0),
-                     1.1,
-                     &at);
-  Source * s2 = experiment.addNode(std::make_pair(0, COLUMNS-1),
-                     1.1,
-                     &at);
-
-  s1->addDest(nrc);
-  s2->addDest(nrc);
+  Source * str = experiment.addNode(std::make_pair(0, COLUMNS-1),
+                                    1.1,
+                                    &at);
+  Source * sbl = experiment.addNode(std::make_pair(ROWS-1, 0),
+                                    1.1,
+                                    &at);
+  Source * stl = experiment.addNode(std::make_pair(0, 0),
+                                    1.1,
+                                    &at);
+  str->addDest(nbr);
+  sbl->addDest(nbr);
+  stl->addDest(str);
+  stl->addDest(sbl);
 
   std::cout << "DONE" << std::endl;
 
