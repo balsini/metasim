@@ -2,7 +2,6 @@
 #define __NETINTERFACE_HPP__
 
 #include <deque>
-#include <vector>
 #include <string>
 
 #include <metasim.hpp>
@@ -47,7 +46,6 @@ public:
  * --- otherwise, the message is ignored.
  *
  * It implements a simple CSMA/CA protocol, so:
- *
  * The sender:
  *   Checks if the channel was free for DIFS time;
  *   - If the condition is verified, the frame is sent;
@@ -75,21 +73,44 @@ class WifiInterface : public NetInterface
 {
 protected:
   std::deque<Message *> _out_queue;
-  std::vector<Message *> _received;
-  std::vector<Node *> _blocked;
+
+  const int _c_wMin = 10;
+  const int _c_wMax = 10;
+  const int _DIFS = 28;
+  const int _SIFS = 10;
+
+  int _backoff_timer;
+  int _c_w;
 
   WifiLink * _link;
-
-  int _cont_per;
-  int _backoff;
-  int _coll;
-
   double _radius;
 
 public:
-  //MetaSim::GEvent<WifiInterface> _collision_evt;
-  //MetaSim::GEvent<WifiInterface> _start_trans_evt;
-  //MetaSim::GEvent<WifiInterface> _end_trans_evt;
+  /**
+   * A new message is willing to be sent, so DIFS has to be waited.
+   */
+  MetaSim::GEvent<WifiInterface> _wait_for_DIFS_evt;
+  /**
+   * After DIFS, if channel was not idle, a backoff time has to
+   * be waited.
+   */
+  MetaSim::GEvent<WifiInterface> _wait_for_backoff_evt;
+  /**
+   * Some other node is transmitting.
+   */
+  MetaSim::GEvent<WifiInterface> _collision_evt;
+  /**
+   * Transmitting data.
+   */
+  MetaSim::GEvent<WifiInterface> _start_trans_evt;
+  /**
+   * Data transmission completed
+   */
+  MetaSim::GEvent<WifiInterface> _end_trans_evt;
+  /**
+   * Waiting for SIFS to send the ACK
+   */
+  MetaSim::GEvent<WifiInterface> _wait_for_SIFS_evt;
 
   WifiInterface(const std::string &name, double radius, Node * n);
   virtual ~WifiInterface();
@@ -102,7 +123,8 @@ public:
 
   virtual void onCollision();
   virtual void onTransmit(MetaSim::Event * e);
-  //virtual void onStartTrans(MetaSim::Event * e);
+  virtual void onStartTrans(MetaSim::Event * e);
+  virtual void onDIFSElapsed(MetaSim::Event * e);
   //virtual void onEndTrans(MetaSim::Event * e);
 
   virtual void send(Message * m);
