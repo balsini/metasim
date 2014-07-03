@@ -164,7 +164,7 @@ void Experiment::start(double UMIN,
 
     try {
       cout << "U = " << u << endl;
-      SIMUL.run(SIM_LEN, 5);
+      SIMUL.run(SIM_LEN, 1);
       output.write(u);
     } catch (BaseExc &e) {
       cout << e.what() << endl;

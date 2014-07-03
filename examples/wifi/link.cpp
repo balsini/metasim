@@ -19,12 +19,10 @@ WifiLink::~WifiLink() {}
 
 void WifiLink::send(Message *m)
 {
-  std::cout << "Broadcasting message to:" << std::endl;
   for (auto o : _interfaces) {
-    std::cout << o->getName() << std::endl;
+    std::cout << "Broadcasting message to: " << o->getName() << std::endl;
     o->receive(m);
   }
-  std::cout << "DONE" << std::endl;
 }
 
 void WifiLink::addNode(Node * n)
@@ -37,12 +35,12 @@ void WifiLink::addNode(Node * n)
 
 WifiInterface * WifiLink::getRightInterface() {
   WifiInterface * i = _interfaces.front();
-  double maxRight = std::get<0>(_interfaces.front()->node()->position());
+  double maxRight = std::get<1>(_interfaces.front()->node()->position());
 
   // Search for the rightest
   for (auto o : _interfaces) {
-    if (maxRight < std::get<0>(o->node()->position())) {
-      maxRight = std::get<0>(o->node()->position());
+    if (maxRight < std::get<1>(o->node()->position())) {
+      maxRight = std::get<1>(o->node()->position());
       i = o;
     }
   }
@@ -52,12 +50,12 @@ WifiInterface * WifiLink::getRightInterface() {
 
 WifiInterface * WifiLink::getDownInterface() {
   WifiInterface * i = _interfaces.front();
-  double maxDown = std::get<1>(_interfaces.front()->node()->position());
+  double maxDown = std::get<0>(_interfaces.front()->node()->position());
 
   // Search for the rightest
   for (auto o : _interfaces) {
-    if (maxDown < std::get<1>(o->node()->position())) {
-      maxDown = std::get<1>(o->node()->position());
+    if (maxDown < std::get<0>(o->node()->position())) {
+      maxDown = std::get<0>(o->node()->position());
       i = o;
     }
   }

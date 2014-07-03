@@ -19,6 +19,7 @@ enum WifiInterfaceStatus {
   IDLE,
   WAITING_FOR_DIFS,
   WAITING_FOR_SIFS,
+  WAITING_FOR_BACKOFF,
   SENDING_MESSAGE,
   RECEIVING_MESSAGE
 };
@@ -140,11 +141,10 @@ public:
   Node * node() { return _node; }
   MetaSim::Tick nextTransTime();
 
-  virtual void onTransmit(MetaSim::Event * e);
   virtual void onStartTrans(MetaSim::Event * e);
   virtual void onDIFSElapsed(MetaSim::Event * e);
   virtual void onSIFSElapsed(MetaSim::Event * e);
-  //virtual void onEndTrans(MetaSim::Event * e);
+  virtual void onEndTrans(MetaSim::Event * e);
 
   WifiInterface * routingProtocol(Node * n);
   void node(Node * n) {_node = n; }
@@ -167,6 +167,8 @@ public:
    */
   void onMessageReceived(MetaSim::Event * e);
   void onMessageSent(MetaSim::Event * e);
+
+  void printStatus();
 
   void newRun();
   void endRun();

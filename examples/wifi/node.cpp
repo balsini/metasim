@@ -35,7 +35,7 @@ void Source::produce()
   UniformVar toRand(0, _dest.size());
   int to = toRand.get();
 
-  //std::cout << this->getName() << ": sending message to :" <<  _dest.at(to)->getName() << std::endl;
+  std::cout << this->getName() << ": sending message to: " <<  _dest.at(to)->getName() << std::endl;
 
   Message * m = new Message((int)len.get(), this, _dest.at(to));
 

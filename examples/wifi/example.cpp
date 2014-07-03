@@ -17,7 +17,7 @@ const double UMAX = 0.5;
 const double USTEP = 0.1;
 
 const unsigned AVG_LEN = 800;
-const Tick SIM_LEN = (int) (AVG_LEN * 1000);
+const Tick SIM_LEN = (int) (AVG_LEN * 5000);
 
 int main()
 {
@@ -42,7 +42,7 @@ int main()
    ***********************************/
   std::cout << "\nCreating Nodes ..." << std::endl;
 
-  ExponentialVar at(20);
+  ExponentialVar at(500000);
 
   // First, generates the nodes inside the matrix
 
