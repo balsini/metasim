@@ -18,16 +18,6 @@ Message::Message(int l, Node *s, Node *d, int id, bool ack) :
   _id = id;
 }
 
-void Message::setStartTime(Tick t)
-{
-  _start_time = t;
-}
-
-Tick Message::getStartTime()
-{
-  return _start_time;
-}
-
 void Message::setTransTime(Tick t)
 {
   _trans_time = t;
@@ -38,15 +28,6 @@ Tick Message::getTransTime()
   return _trans_time;
 }
 
-void Message::setArrTime(Tick t)
-{
-  _arr_time = t;
-}
-
-Tick Message::getArrTime()
-{
-  return _arr_time;
-}
 
 int Message::length()
 {

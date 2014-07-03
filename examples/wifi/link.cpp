@@ -20,7 +20,7 @@ WifiLink::~WifiLink() {}
 void WifiLink::send(Message *m)
 {
   for (auto o : _interfaces) {
-    std::cout << "Broadcasting message to: " << o->getName() << std::endl;
+    //std::cout << "Broadcasting message to: " << o->getName() << std::endl;
     o->receive(m);
   }
 }
@@ -28,9 +28,6 @@ void WifiLink::send(Message *m)
 void WifiLink::addNode(Node * n)
 {
   _interfaces.push_back(n->netInterface());
-  for (auto o : _interfaces) {
-    std::cout << o->getName() << std::endl;
-  }
 }
 
 WifiInterface * WifiLink::getRightInterface() {

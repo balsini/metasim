@@ -83,19 +83,21 @@ class WifiInterface : public NetInterface
    * @param m ACK message
    */
   void sendACK(Message * m);
+  void incrementBackoff();
+  int getBackoff();
 
 protected:
   std::deque<Message *> _out_queue;
   std::deque<Message *> _ack_queue;
 
-  const int _c_wMin = 10;
-  const int _c_wMax = 10;
+  const int _c_wMin = 1;
+  const int _c_wMax = 50000;
   const int _DIFS = 28;
   const int _SIFS = 10;
   /**
    * Time for which the acknowledgement is awaited
    */
-  const int _ACK_time = 100;
+  int _ACK_time = 100;
 
   bool _collision_detected;
   int _backoff_timer;
@@ -107,7 +109,7 @@ protected:
 
   WifiInterfaceStatus _status;
 
-  unsigned int _corrupted_messages;
+  int _corrupted_messages;
 public:
   /**
    * A new message is willing to be sent, so DIFS has to be waited
@@ -131,9 +133,17 @@ public:
    */
   MetaSim::GEvent<WifiInterface> _end_trans_evt;
   /**
+   * ACK transmission completed
+   */
+  MetaSim::GEvent<WifiInterface> _end_ACKtrans_evt;
+  /**
    * Waiting for SIFS to send the ACK
    */
   MetaSim::GEvent<WifiInterface> _wait_for_SIFS_evt;
+  /**
+   * Waiting for destination to send back the ACK
+   */
+  MetaSim::GEvent<WifiInterface> _wait_for_ACK_evt;
 
   WifiInterface(const std::string &name, double radius, Node * n);
   virtual ~WifiInterface();
@@ -143,12 +153,12 @@ public:
 
   double radius() { return _radius; }
   Node * node() { return _node; }
-  MetaSim::Tick nextTransTime();
 
   virtual void onStartTrans(MetaSim::Event * e);
   virtual void onDIFSElapsed(MetaSim::Event * e);
   virtual void onSIFSElapsed(MetaSim::Event * e);
   virtual void onEndTrans(MetaSim::Event * e);
+  virtual void onEndACKTrans(MetaSim::Event * e);
 
   WifiInterface * routingProtocol(Node * n);
   void node(Node * n) {_node = n; }
@@ -171,7 +181,10 @@ public:
    */
   void onMessageReceived(MetaSim::Event * e);
   void onMessageSent(MetaSim::Event * e);
+  void onACKTimeElapsed(MetaSim::Event * e);
+  void onBackoffTimeElapsed(MetaSim::Event * e);
 
+  void trySend();
   void printStatus();
 
   void newRun();

@@ -74,7 +74,7 @@ public:
    */
   void setInterval(std::auto_ptr<RandomVar> i) { _interval = i; }
 
-  virtual void put(Message * m) { _consumed++; }
+  virtual void put(Message * m);
 
   void onMessageReceived(Message * m);
 

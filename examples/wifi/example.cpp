@@ -9,24 +9,24 @@
 
 using namespace MetaSim;
 
-const int ROWS = 2;
-const int COLUMNS = 2;
+const int ROWS = 4;
+const int COLUMNS = 4;
 
 const double UMIN = 0.5;
-const double UMAX = 0.5;
+const double UMAX = 0.9;
 const double USTEP = 0.1;
 
 const unsigned AVG_LEN = 800;
-const Tick SIM_LEN = (int) (AVG_LEN * 5000);
+const Tick SIM_LEN = (int) (AVG_LEN * 1000000);
 
 int main()
 {
   Experiment experiment;
 
   std::cout << std::endl;
-  std::cout << "\\¯¯\\    /¯¯/ (O)   |¯¯¯¯¯¯| (O)\n";
+  std::cout << "\\¯¯\\    /¯¯/ (  )  |¯¯¯¯¯¯| (  )\n";
   std::cout << " \\  \\/\\/  / |¯¯¯¯| |   ¯¯| |¯¯¯¯|\n";
-  std::cout << "  \\__/\\__/ '|____| |__|¯¯  |____| MetaSim";
+  std::cout << "  \\__/\\__/  |____| |__|¯¯  |____| MetaSim";
   std::cout << std::endl;
 
   if (ROWS < 2 || COLUMNS < 2) {
@@ -42,7 +42,7 @@ int main()
    ***********************************/
   std::cout << "\nCreating Nodes ..." << std::endl;
 
-  ExponentialVar at(500000);
+  ExponentialVar at(100000);
 
   // First, generates the nodes inside the matrix
 
@@ -58,7 +58,7 @@ int main()
 
   for (int c=1; c<COLUMNS-1; ++c) {
     for (int r=1; r<ROWS-1; ++r) {
-      std::cout << "Generated node [" << r << " , " << c << "]" << std::endl;
+      //std::cout << "Generated node [" << r << " , " << c << "]" << std::endl;
       experiment.addNode(std::make_pair(r, c), 1.1);
     }
   }
@@ -77,11 +77,11 @@ int main()
    ************/
 
   for (int c=1; c<COLUMNS-1; ++c) {
-    std::cout << "Generated node [" << ROWS-1 << " , " << c << "]" << std::endl;
+    //std::cout << "Generated node [" << ROWS-1 << " , " << c << "]" << std::endl;
     Node * n = experiment.addNode(std::make_pair(ROWS-1, c),
                                   1.1);
 
-    std::cout << "Generated source [" << 0 << " , " << c << "]" << std::endl;
+    //std::cout << "Generated source [" << 0 << " , " << c << "]" << std::endl;
     Source * s = experiment.addNode(std::make_pair(0, c),
                                     1.1,
                                     &at);
@@ -89,11 +89,11 @@ int main()
   }
   for (int r=1; r<ROWS-1; ++r) {
 
-    std::cout << "Generated node [" << r << " , " << COLUMNS-1 << "]" << std::endl;
+    //std::cout << "Generated node [" << r << " , " << COLUMNS-1 << "]" << std::endl;
     Node * n = experiment.addNode(std::make_pair(r, COLUMNS-1),
                                   1.1);
 
-    std::cout << "Generated source [" << r << " , " << 0 << "]" << std::endl;
+    //std::cout << "Generated source [" << r << " , " << 0 << "]" << std::endl;
     Source * s = experiment.addNode(std::make_pair(r, 0),
                                     1.1,
                                     &at);
@@ -112,21 +112,21 @@ int main()
    *
    ************/
 
-  std::cout << "Generated node [" << ROWS-1 << " , " << COLUMNS-1 << "]" << std::endl;
+  //std::cout << "Generated node [" << ROWS-1 << " , " << COLUMNS-1 << "]" << std::endl;
   Node * nbr = experiment.addNode(std::make_pair(ROWS-1, COLUMNS-1),
                                   1.1);
 
-  std::cout << "Generated source [" << 0 << " , " << COLUMNS-1 << "]" << std::endl;
+  //std::cout << "Generated source [" << 0 << " , " << COLUMNS-1 << "]" << std::endl;
   Source * str = experiment.addNode(std::make_pair(0, COLUMNS-1),
                                     1.1,
                                     &at);
 
-  std::cout << "Generated source [" << ROWS-1 << " , " << 0 << "]" << std::endl;
+  //std::cout << "Generated source [" << ROWS-1 << " , " << 0 << "]" << std::endl;
   Source * sbl = experiment.addNode(std::make_pair(ROWS-1, 0),
                                     1.1,
                                     &at);
 
-  std::cout << "Generated source [" << 0 << " , " << 0 << "]" << std::endl;
+  //std::cout << "Generated source [" << 0 << " , " << 0 << "]" << std::endl;
   Source * stl = experiment.addNode(std::make_pair(0, 0),
                                     1.1,
                                     &at);

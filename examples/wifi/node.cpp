@@ -20,6 +20,13 @@ void Node::newRun()
   _consumed = 0;
 }
 
+void Source::newRun()
+{
+  //std::cout << "Source::newRun()" << std::endl;
+  _produced = 0;
+  _prodEvent.post(Tick(_at->get()));
+}
+
 void Node::onMessageReceived(Message *m)
 {
   // simply, record the fact that the message has succesfully been
@@ -30,15 +37,16 @@ void Node::onMessageReceived(Message *m)
 
 void Source::produce()
 {
-  //std::cout << "Source::produce()" << std::endl;
-  UniformVar len(0,2400);
+  UniformVar lenRand(0,2400);
   UniformVar toRand(0, _dest.size());
   UniformVar idRand(0, 32767);
   int to = toRand.get();
 
-  std::cout << this->getName() << ": sending message to: " <<  _dest.at(to)->getName() << std::endl;
+  //std::cout << this->getName() << ": sending message to: " <<  _dest.at(to)->getName() << std::endl;
+  int msgLen = lenRand.get();
 
-  Message * m = new Message((int)len.get(), this, _dest.at(to), idRand.get());
+  Message * m = new Message(msgLen, this, _dest.at(to), idRand.get());
+  m->setTransTime(Tick(msgLen));
 
   DBGENTER(_NODE_DBG);
   DBGPRINT("dest node = " << _dest.at(to)->getName());
@@ -48,9 +56,10 @@ void Source::produce()
   _prodEvent.post(SIMUL.getTime() + Tick(_at->get()));
 }
 
-void Source::newRun()
+
+
+void Node::put(Message * m)
 {
-  //std::cout << "Source::newRun()" << std::endl;
-  _produced = 0;
-  _prodEvent.post(Tick(_at->get()));
+  _consumed++;
+  //std::cout << this->getName() << ": received message from: " << m->sourceNode()->getName() << std::endl;
 }

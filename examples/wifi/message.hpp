@@ -32,14 +32,8 @@ class Message
 public:
   Message(int l, Node * s, Node * d, int id, bool ack = false);
 
-  void setStartTime(MetaSim::Tick t);
-  MetaSim::Tick getStartTime();
-
   void setTransTime(MetaSim::Tick t);
   MetaSim::Tick getTransTime();
-
-  void setArrTime(MetaSim::Tick t);
-  MetaSim::Tick getArrTime();
 
   int length();
 

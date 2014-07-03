@@ -11,15 +11,15 @@ void Experiment::generateLinks()
   std::cout << "Generating Links ... " << std::endl;
 
   for (auto n : _nodes) {
-    std::cout << "Node: " << n->getName() << std::endl;
+    //std::cout << "Node: " << n->getName() << std::endl;
     for (auto other : _nodes) {
       if (other != n) {
         d = sqrt(pow(std::get<0>(n->position()) - std::get<0>(other->position()), 2)
                  + pow(std::get<1>(n->position()) - std::get<1>(other->position()), 2));
 
         if (d < n->netInterface()->radius()) {
-          std::cout << "\t" << other->getName() << " -- distance: " << d << std::endl;
-          std::cout << "\t\tIN RANGE" << std::endl;
+          //std::cout << "\t" << other->getName() << " -- distance: " << d << std::endl;
+          //std::cout << "\t\tIN RANGE" << std::endl;
           n->netInterface()->link()->addNode(other);
         }
       }
@@ -150,6 +150,8 @@ void Experiment::start(double UMIN,
   GnuPlotOutput output;
   output.init();
 
+  std::cout << "Simulating ...\n" << std::endl;
+
   for (double u=UMIN; u<=UMAX; u+=USTEP) {
 
     double l = 6 * AVG_LEN / u;
@@ -164,7 +166,7 @@ void Experiment::start(double UMIN,
 
     try {
       cout << "U = " << u << endl;
-      SIMUL.run(SIM_LEN, 1);
+      SIMUL.run(SIM_LEN, 5);
       output.write(u);
     } catch (BaseExc &e) {
       cout << e.what() << endl;
