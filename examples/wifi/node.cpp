@@ -33,11 +33,12 @@ void Source::produce()
   //std::cout << "Source::produce()" << std::endl;
   UniformVar len(0,2400);
   UniformVar toRand(0, _dest.size());
+  UniformVar idRand(0, 32767);
   int to = toRand.get();
 
   std::cout << this->getName() << ": sending message to: " <<  _dest.at(to)->getName() << std::endl;
 
-  Message * m = new Message((int)len.get(), this, _dest.at(to));
+  Message * m = new Message((int)len.get(), this, _dest.at(to), idRand.get());
 
   DBGENTER(_NODE_DBG);
   DBGPRINT("dest node = " << _dest.at(to)->getName());

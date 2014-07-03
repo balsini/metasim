@@ -101,7 +101,9 @@ void WifiInterface::onDIFSElapsed(MetaSim::Event * e)
   if (_collision_detected) {
     std::cout << this->getName() << ": Collision detected, managing backoff!" << std::endl;
     _status = WAITING_FOR_BACKOFF;
-    //TODO
+
+
+
   } else {
     std::cout << this->getName() << ": No collision detected, starting transmission! Destination: " << _out_queue.front()->destInterface()->getName() << std::endl;
 
@@ -167,12 +169,16 @@ void WifiInterface::onMessageReceived(Event * e)
     std::cout << "\tCorrect Interface" << std::endl;
     if (_incoming_message->isACK()) {
       std::cout << "\tACK received" << std::endl;
-      _out_queue.pop_front();
+      if (_incoming_message->id() == _out_queue.front()->id()) {
+        std::cout << "\tACK is correct" << std::endl;
+        _out_queue.pop_front();
+      }
     } else {
       std::cout << "\tNormal Message" << std::endl;
       Message * m_ack = new Message(10,
                                     _node,
                                     _incoming_message->destInterface()->node(),
+                                    _incoming_message->id(),
                                     true);
       m_ack->destInterface(_incoming_message->sourceInterface());
       m_ack->sourceInterface(this);

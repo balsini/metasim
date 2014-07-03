@@ -13,6 +13,7 @@ class NetInterface;
 class Message
 {
   int _len;
+  int _id;
 
   //  partito dal nodo e arrivato all'interfaccia
   MetaSim::Tick _start_time;
@@ -29,7 +30,7 @@ class Message
   NetInterface *_src_net_interf;
 
 public:
-  Message(int l, Node * s, Node * d, bool ack = false);
+  Message(int l, Node * s, Node * d, int id, bool ack = false);
 
   void setStartTime(MetaSim::Tick t);
   MetaSim::Tick getStartTime();
@@ -43,6 +44,7 @@ public:
   int length();
 
   bool isACK() { return _ack; }
+  int id() { return _id; }
 
   void sourceInterface(NetInterface *n);
   void destInterface(NetInterface *n);

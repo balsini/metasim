@@ -92,6 +92,10 @@ protected:
   const int _c_wMax = 10;
   const int _DIFS = 28;
   const int _SIFS = 10;
+  /**
+   * Time for which the acknowledgement is awaited
+   */
+  const int _ACK_time = 100;
 
   bool _collision_detected;
   int _backoff_timer;
