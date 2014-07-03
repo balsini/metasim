@@ -11,15 +11,15 @@ void Experiment::generateLinks()
   std::cout << "Generating Links ... " << std::endl;
 
   for (auto n : _nodes) {
-    //std::cout << "Node: " << n->getName() << std::endl;
+    std::cout << "Node: " << n->getName() << std::endl;
     for (auto other : _nodes) {
       if (other != n) {
         d = sqrt(pow(std::get<0>(n->position()) - std::get<0>(other->position()), 2)
                  + pow(std::get<1>(n->position()) - std::get<1>(other->position()), 2));
 
         if (d < n->netInterface()->radius()) {
-          //std::cout << "\t" << other->getName() << " -- distance: " << d << std::endl;
-          //std::cout << "\t\tIN RANGE" << std::endl;
+          std::cout << "\t" << other->getName() << " -- distance: " << d << std::endl;
+          std::cout << "\t\tIN RANGE" << std::endl;
           n->netInterface()->link()->addNode(other);
         }
       }
@@ -80,6 +80,7 @@ WifiInterface * Experiment::createInterface(Node * n, const std::string &name, d
   WifiInterface * n_int = new WifiInterface(interfaceName, radius, n);
 
   n->netInterface(n_int);
+  n_int->node(n);
 
   return n_int;
 }

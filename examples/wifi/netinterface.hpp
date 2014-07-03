@@ -15,6 +15,14 @@ class WifiLink;
 
 #define _ETHINTER_DBG "WifiInterface"
 
+enum WifiInterfaceStatus {
+  IDLE,
+  WAITING_FOR_DIFS,
+  WAITING_FOR_SIFS,
+  SENDING_MESSAGE,
+  RECEIVING_MESSAGE
+};
+
 class NetInterface : public MetaSim::Entity
 {
 protected:
@@ -24,11 +32,9 @@ public:
   NetInterface(const std::string &name, Node * const &n);
   virtual ~NetInterface();
 
+  virtual Node * node() = 0;
   virtual void send(Message * m) = 0;
-  virtual Message * receive(Node * n) = 0;
-
-  virtual void onMessageSent(Message * m) = 0;
-  virtual void onMessageReceived(Message * m) = 0;
+  virtual void receive(Message * n) = 0;
 };
 
 /**
@@ -71,36 +77,48 @@ public:
  */
 class WifiInterface : public NetInterface
 {
+  /**
+   * Sends ACK message to sender interface
+   * @param m ACK message
+   */
+  void sendACK(Message * m);
+
 protected:
   std::deque<Message *> _out_queue;
+  std::deque<Message *> _ack_queue;
 
   const int _c_wMin = 10;
   const int _c_wMax = 10;
   const int _DIFS = 28;
   const int _SIFS = 10;
 
+  bool _collision_detected;
   int _backoff_timer;
   int _c_w;
 
+  Message * _incoming_message;
   WifiLink * _link;
   double _radius;
 
+  WifiInterfaceStatus _status;
+
+  unsigned int _corrupted_messages;
 public:
   /**
-   * A new message is willing to be sent, so DIFS has to be waited.
+   * A new message is willing to be sent, so DIFS has to be waited
    */
   MetaSim::GEvent<WifiInterface> _wait_for_DIFS_evt;
   /**
    * After DIFS, if channel was not idle, a backoff time has to
-   * be waited.
+   * be waited
    */
   MetaSim::GEvent<WifiInterface> _wait_for_backoff_evt;
   /**
-   * Some other node is transmitting.
+   * Some other node is transmitting
    */
-  MetaSim::GEvent<WifiInterface> _collision_evt;
+  MetaSim::GEvent<WifiInterface> _data_received_evt;
   /**
-   * Transmitting data.
+   * Transmitting data
    */
   MetaSim::GEvent<WifiInterface> _start_trans_evt;
   /**
@@ -119,18 +137,35 @@ public:
   WifiLink * link();
 
   double radius() { return _radius; }
+  Node * node() { return _node; }
   MetaSim::Tick nextTransTime();
 
-  virtual void onCollision();
   virtual void onTransmit(MetaSim::Event * e);
   virtual void onStartTrans(MetaSim::Event * e);
   virtual void onDIFSElapsed(MetaSim::Event * e);
+  virtual void onSIFSElapsed(MetaSim::Event * e);
   //virtual void onEndTrans(MetaSim::Event * e);
 
+  void node(Node * n) {_node = n; }
+  /**
+   * Node calls this function, requesting the interface
+   * to send the message.
+   * @param m message to be sent
+   */
   virtual void send(Message * m);
-  virtual Message * receive(Node * n);
-  virtual void onMessageSent(Message * m);
-  virtual void onMessageReceived(Message * m);
+  /**
+   * Link calls this function, meaning that the message is
+   * sent from the link to the interface.
+   * @param m received message
+   */
+  virtual void receive(Message * m);
+  /**
+   * This function is called when the transmission is completed.
+   * Collisions are checked here.
+   * @param m
+   */
+  void onMessageReceived(MetaSim::Event * e);
+  void onMessageSent(MetaSim::Event * e);
 
   void newRun();
   void endRun();

@@ -40,7 +40,7 @@ public:
   WifiLink(const std::string &name);
   virtual ~WifiLink();
 
-  bool isBusy();
+  bool isBusy(){ return _isBusy; }
 
   virtual void send(Message *m);
 
@@ -48,14 +48,13 @@ public:
 
   void contend(WifiInterface *eth, Message *m);
   void onEndContention(MetaSim::Event *e);
-  void onCollision(MetaSim::Event *e);
   void onEndTransmission(MetaSim::Event *e);
 
   void setContentionPeriod(int p) { _contention_period = p; }
   int getContentionPeriod() { return _contention_period; }
 
   void newRun();
-  void endRun();
+  void endRun() {}
 };
 
 #endif

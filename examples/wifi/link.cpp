@@ -5,13 +5,9 @@
 
 using namespace MetaSim;
 
-Link::Link(const std::string &name) : Entity(name)
-{
-}
+Link::Link(const std::string &name) : Entity(name) {}
 
-Link::~Link()
-{
-}
+Link::~Link() {}
 
 WifiLink::WifiLink(const std::string &name)
   : Link(name), _interfaces(), _contending(),
@@ -19,12 +15,9 @@ WifiLink::WifiLink(const std::string &name)
     _isContending(false),
     _isCollision(false),
     _contention_period(10),
-    _message(0)
-{}
+    _message(0) {}
 
-WifiLink::~WifiLink()
-{
-}
+WifiLink::~WifiLink() {}
 
 void WifiLink::newRun()
 {
@@ -35,21 +28,17 @@ void WifiLink::newRun()
   _message = 0;
 }
 
-void WifiLink::endRun()
-{
-}
-
-bool WifiLink::isBusy()
-{
-  return _isBusy;
-}
-
 void WifiLink::send(Message *m)
 {
+  std::cout << "Broadcasting messages" << std::endl;
+  for (auto o : _nodes)
+    o->netInterface()->receive(m);
+  std::cout << "DONE" << std::endl;
 }
 
 void WifiLink::contend(WifiInterface * wifi, Message * m)
 {
+  /*
   DBGENTER(_ETHLINK_DBG);
 
   if (_isContending) {
@@ -64,10 +53,12 @@ void WifiLink::contend(WifiInterface * wifi, Message * m)
     //_end_contention_evt.post(SIMUL.getTime() + _contention_period);
   }
   _contending.push_back(wifi);
+  */
 }
 
 void WifiLink::onEndContention(Event *e)
 {
+  /*
   DBGENTER(_ETHLINK_DBG);
 
   _isContending = false;
@@ -75,6 +66,7 @@ void WifiLink::onEndContention(Event *e)
   //_end_transmission_evt.post(SIMUL.getTime() + _message->length());
 
   _contending.clear();
+  */
 }
 
 
@@ -83,24 +75,9 @@ void WifiLink::addNode(Node * n)
   _nodes.push_back(n);
 }
 
-void WifiLink::onCollision(Event *e)
-{
-  DBGENTER(_ETHLINK_DBG);
-
-  _isContending = false;
-  _isCollision = false;
-  _isBusy = false;
-  while (!_contending.empty()) {
-    _contending.back()->onCollision();
-    _contending.pop_back();
-  }
-  _message = 0;
-
-
-}
-
 void WifiLink::onEndTransmission(Event *e)
 {
+  /*
   Message *m = _message;
 
   DBGENTER(_ETHLINK_DBG);
@@ -111,8 +88,8 @@ void WifiLink::onEndTransmission(Event *e)
   _isBusy = false;
   _message = 0;
 
-  dst->onMessageReceived(m);
-  src->onMessageSent(m);
+  //dst->onMessageReceived(m);
+  //src->onMessageSent(m);
 
-
+*/
 }

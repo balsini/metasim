@@ -19,9 +19,12 @@ NetInterface::~NetInterface()
 
 WifiInterface::WifiInterface(const std::string &name, double radius, Node * n) :
   NetInterface(name, n),
+  _collision_detected(false),
+  _status(IDLE),
+  _corrupted_messages(0),
   _wait_for_DIFS_evt(),
   _wait_for_backoff_evt(),
-  _collision_evt(),
+  _data_received_evt(),
   _start_trans_evt(),
   _end_trans_evt(),
   _wait_for_SIFS_evt()
@@ -31,6 +34,8 @@ WifiInterface::WifiInterface(const std::string &name, double radius, Node * n) :
   //register_handler(_collision_evt, this, &WifiInterface::onCollision);
   register_handler(_start_trans_evt, this, &WifiInterface::onStartTrans);
   register_handler(_wait_for_DIFS_evt, this, &WifiInterface::onDIFSElapsed);
+  register_handler(_wait_for_SIFS_evt, this, &WifiInterface::onSIFSElapsed);
+  register_handler(_data_received_evt, this, &WifiInterface::onMessageReceived);
   //register_handler(_end_trans_evt, this, &WifiInterface::onEndTrans);
 
   _radius = radius;
@@ -44,11 +49,11 @@ WifiInterface::~WifiInterface()
 
 void WifiInterface::newRun()
 {
-  vector<Message *>::iterator i;
-
+  _ack_queue.clear();
   _out_queue.clear();
-  //for (i = _received.begin(); i != _received.end(); ++i) delete (*i);
-
+  _collision_detected = false;
+  _status = IDLE;
+  _corrupted_messages = 0;
 }
 
 void WifiInterface::link(WifiLink * l)
@@ -72,25 +77,48 @@ void WifiInterface::send(Message *m)
 
   _out_queue.push_back(m);
 
-  if (_out_queue.size() == 1)
+  if (_status == IDLE) {
+    _status = WAITING_FOR_DIFS;
     _wait_for_DIFS_evt.post(SIMUL.getTime() + _DIFS);
-  else
-    DBGPRINT("Message enqueued");
+  }
 }
 
-void WifiInterface::onTransmit(Event *e)
+void WifiInterface::sendACK(Message * m)
+{
+  std::cout << "Awaiting for SIFS" << std::endl;
+  _ack_queue.push_back(m);
+
+  _status = WAITING_FOR_SIFS;
+  _wait_for_SIFS_evt.post(SIMUL.getTime() + _SIFS);
+}
+
+void WifiInterface::onTransmit(Event * e)
 {
   DBGENTER(_ETHINTER_DBG);
 
-  if (_link->isBusy())
-    onCollision();
-  else
-    _link->contend(this, _out_queue.front());
+  //if (_link->isBusy())
+  //  onCollision();
+  //else
+  //  _link->contend(this, _out_queue.front());
 }
 
 void WifiInterface::onDIFSElapsed(MetaSim::Event * e)
 {
   std::cout << "DIFS elapsed!" << std::endl;
+  if (_collision_detected) {
+    std::cout << "Collision detected, managing backoff!" << std::endl;
+  } else {
+    std::cout << "No collision detected, starting transmission!" << std::endl;
+    _link->send(_out_queue.front());
+    _out_queue.pop_front();
+  }
+}
+
+void WifiInterface::onSIFSElapsed(MetaSim::Event * e)
+{
+  std::cout << "SIFS elapsed!" << std::endl;
+  _link->send(_ack_queue.front());
+  _ack_queue.pop_front();
 }
 
 void WifiInterface::onStartTrans(Event * e)
@@ -98,16 +126,7 @@ void WifiInterface::onStartTrans(Event * e)
   std::cout << "Started Transmission!" << std::endl;
 }
 
-void WifiInterface::onCollision()
-{
-  DBGENTER(_ETHINTER_DBG);
-
-  //_trans_evt.post(SIMUL.getTime() + nextTransTime());
-
-
-}
-
-void WifiInterface::onMessageSent(Message *m)
+void WifiInterface::onMessageSent(MetaSim::Event * e)
 {
   DBGENTER(_ETHINTER_DBG);
 
@@ -132,38 +151,56 @@ Tick WifiInterface::nextTransTime()
   return (Tick) a.get();
 }
 
-void WifiInterface::onMessageReceived(Message *m)
+void WifiInterface::onMessageReceived(Event * e)
 {
   DBGENTER(_ETHINTER_DBG);
-  /*
-  vector<Node *>::iterator i = find(_blocked.begin(), _blocked.end(), m->destNode());
 
-  if (i != _blocked.end()) {
-    (*i)->onMessageReceived(m);
-    _blocked.erase(i);
+  if (_collision_detected) {
+    _collision_detected = false;
+    return;
   }
-  else
-    _received.push_back(m);
-    */
+
+  // Check message interface address
+  if (_incoming_message->destInterface() == this) {
+    // Frame is for me, ACK must be sent
+
+    Message * m_ack = new Message(10,
+                                  _node,
+                                  _incoming_message->destInterface()->node());
+    sendACK(m_ack);
+
+    // Check if it has to be forwarded
+    if (_incoming_message->destNode() == _node) {
+      // Message is for my node
+      _node->put(_incoming_message);
+    } else {
+      // Message must be forwarded
+      send(_incoming_message);
+    }
+  }
 }
 
-Message * WifiInterface::receive(Node *n)
+void WifiInterface::receive(Message * m)
 {
   DBGTAG(_ETHINTER_DBG, getName() + "::get()");
-  /*
-  vector<Message *>::iterator i = _received.begin();
-  Message *m = NULL;
 
-  while (i != _received.end()) {
-    if ((*i)->destNode() == n) {
-      m = *i;
-      _received.erase(i);
-      return m;
-    }
-    else ++i;
+  switch(_status) {
+    case IDLE:
+      _incoming_message = m;
+      _data_received_evt.post(SIMUL.getTime() + m->getTransTime());
+      _status = RECEIVING_MESSAGE;
+      break;
+    case WAITING_FOR_DIFS:
+      _collision_detected = true;
+      break;
+    case WAITING_FOR_SIFS:
+      break;
+    case RECEIVING_MESSAGE:
+      _collision_detected = true;
+      _corrupted_messages++;
+      _data_received_evt.drop();
+      return;
+    default: break;
   }
-  _blocked.push_back(n);
-  */
-  return nullptr;
 }
 
