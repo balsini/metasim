@@ -5,7 +5,7 @@
 using namespace std;
 using namespace MetaSim;
 
-Message::Message(int l, Node *s, Node *d) :
+Message::Message(int l, Node *s, Node *d, bool ack) :
   _len(l), _dst(d), _src(s), _dst_net_interf(NULL),
   _src_net_interf(NULL)
 {
@@ -14,6 +14,7 @@ Message::Message(int l, Node *s, Node *d) :
   _start_time = 0;
   _trans_time = 0;
   _arr_time = 0;
+  _ack = ack;
 }
 
 void Message::setStartTime(Tick t)

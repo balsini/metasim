@@ -5,91 +5,62 @@
 
 using namespace MetaSim;
 
-Link::Link(const std::string &name) : Entity(name) {}
+Link::Link(const std::string & name)
+{
+  _name = name;
+}
 
 Link::~Link() {}
 
 WifiLink::WifiLink(const std::string &name)
-  : Link(name), _interfaces(), _contending(),
-    _isBusy(false),
-    _isContending(false),
-    _isCollision(false),
-    _contention_period(10),
-    _message(0) {}
+  : Link(name) {}
 
 WifiLink::~WifiLink() {}
 
-void WifiLink::newRun()
-{
-  _contending.clear();
-  _isBusy = false;
-  _isContending = false;
-  _isCollision = false;
-  _message = 0;
-}
-
 void WifiLink::send(Message *m)
 {
-  std::cout << "Broadcasting messages" << std::endl;
-  for (auto o : _nodes)
-    o->netInterface()->receive(m);
+  std::cout << "Broadcasting message to:" << std::endl;
+  for (auto o : _interfaces) {
+    std::cout << o->getName() << std::endl;
+    o->receive(m);
+  }
   std::cout << "DONE" << std::endl;
 }
 
-void WifiLink::contend(WifiInterface * wifi, Message * m)
-{
-  /*
-  DBGENTER(_ETHLINK_DBG);
-
-  if (_isContending) {
-    //_end_contention_evt.drop();
-    if (!_isCollision) {
-      _isCollision = true;
-      //_collision_evt.post(SIMUL.getTime() + 3);
-    }
-  } else {
-    _isContending = true;
-    _message = m;
-    //_end_contention_evt.post(SIMUL.getTime() + _contention_period);
-  }
-  _contending.push_back(wifi);
-  */
-}
-
-void WifiLink::onEndContention(Event *e)
-{
-  /*
-  DBGENTER(_ETHLINK_DBG);
-
-  _isContending = false;
-  _isBusy = true;
-  //_end_transmission_evt.post(SIMUL.getTime() + _message->length());
-
-  _contending.clear();
-  */
-}
-
-
 void WifiLink::addNode(Node * n)
 {
-  _nodes.push_back(n);
+  _interfaces.push_back(n->netInterface());
+  for (auto o : _interfaces) {
+    std::cout << o->getName() << std::endl;
+  }
 }
 
-void WifiLink::onEndTransmission(Event *e)
-{
-  /*
-  Message *m = _message;
+WifiInterface * WifiLink::getRightInterface() {
+  WifiInterface * i = _interfaces.front();
+  double maxRight = std::get<0>(_interfaces.front()->node()->position());
 
-  DBGENTER(_ETHLINK_DBG);
+  // Search for the rightest
+  for (auto o : _interfaces) {
+    if (maxRight < std::get<0>(o->node()->position())) {
+      maxRight = std::get<0>(o->node()->position());
+      i = o;
+    }
+  }
 
-  NetInterface *dst = _message->destInterface();
-  NetInterface *src = _message->sourceInterface();
+  return i;
+}
 
-  _isBusy = false;
-  _message = 0;
+WifiInterface * WifiLink::getDownInterface() {
+  WifiInterface * i = _interfaces.front();
+  double maxDown = std::get<1>(_interfaces.front()->node()->position());
 
-  //dst->onMessageReceived(m);
-  //src->onMessageSent(m);
+  // Search for the rightest
+  for (auto o : _interfaces) {
+    if (maxDown < std::get<1>(o->node()->position())) {
+      maxDown = std::get<1>(o->node()->position());
+      i = o;
+    }
+  }
 
-*/
+  return i;
 }

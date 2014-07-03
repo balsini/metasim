@@ -10,12 +10,14 @@
 #include "netinterface.hpp"
 #include "node.hpp"
 
+class Message;
+class Node;
+
 const char* const _ETHLINK_DBG = "EthernetLink";
 
-class Message;
-
-class Link : public MetaSim::Entity
+class Link
 {
+  std::string _name;
 public:
   Link(const std::string &name);
   virtual ~Link();
@@ -28,33 +30,16 @@ class WifiLink : public Link
   std::vector<WifiInterface *> _interfaces;
   std::vector<WifiInterface *> _contending;
 
-  bool _isBusy;
-  bool _isContending;
-  bool _isCollision;
-  int _contention_period;
-
-  Message *_message;
-  std::vector<Node *> _nodes;
-
 public:
   WifiLink(const std::string &name);
   virtual ~WifiLink();
-
-  bool isBusy(){ return _isBusy; }
 
   virtual void send(Message *m);
 
   void addNode(Node * n);
 
-  void contend(WifiInterface *eth, Message *m);
-  void onEndContention(MetaSim::Event *e);
-  void onEndTransmission(MetaSim::Event *e);
-
-  void setContentionPeriod(int p) { _contention_period = p; }
-  int getContentionPeriod() { return _contention_period; }
-
-  void newRun();
-  void endRun() {}
+  WifiInterface * getRightInterface();
+  WifiInterface * getDownInterface();
 };
 
 #endif

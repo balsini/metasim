@@ -24,11 +24,12 @@ class Message
   Node *_dst;
   Node *_src;
 
+  bool _ack;
   NetInterface *_dst_net_interf;
   NetInterface *_src_net_interf;
 
 public:
-  Message(int l, Node * s, Node * d);
+  Message(int l, Node * s, Node * d, bool ack = false);
 
   void setStartTime(MetaSim::Tick t);
   MetaSim::Tick getStartTime();
@@ -40,6 +41,8 @@ public:
   MetaSim::Tick getArrTime();
 
   int length();
+
+  bool isACK() { return _ack; }
 
   void sourceInterface(NetInterface *n);
   void destInterface(NetInterface *n);

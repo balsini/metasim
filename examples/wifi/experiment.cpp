@@ -27,7 +27,6 @@ void Experiment::generateLinks()
   }
 
   std::cout << "DONE" << std::endl;
-
 }
 
 Node * Experiment::createNode(std::pair <int,int> p, double radius, unsigned int nodeId, const std::string &name)

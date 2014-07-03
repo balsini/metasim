@@ -71,11 +71,31 @@ WifiLink * WifiInterface::link()
 void WifiInterface::endRun()
 {}
 
+WifiInterface * WifiInterface::routingProtocol(Node * n)
+{
+  double myPosX = std::get<0>(_node->position()),
+      myPosY = std::get<1>(_node->position()),
+      hisPosX = std::get<0>(n->position()),
+      hisPosY = std::get<1>(n->position());
+
+  if (myPosX == hisPosX) {
+    // Send Bottom
+    return _link->getRightInterface();
+  } else if (myPosY == hisPosY) {
+    // Send Down
+    return _link->getDownInterface();
+  }
+  return 0;
+}
+
 void WifiInterface::send(Message *m)
 {
   DBGENTER(_ETHINTER_DBG);
 
   _out_queue.push_back(m);
+
+  m->sourceInterface(this);
+  m->destInterface(routingProtocol(m->destNode()));
 
   if (_status == IDLE) {
     _status = WAITING_FOR_DIFS;
@@ -110,13 +130,12 @@ void WifiInterface::onDIFSElapsed(MetaSim::Event * e)
   } else {
     std::cout << "No collision detected, starting transmission!" << std::endl;
     _link->send(_out_queue.front());
-    _out_queue.pop_front();
   }
 }
 
 void WifiInterface::onSIFSElapsed(MetaSim::Event * e)
 {
-  std::cout << "SIFS elapsed!" << std::endl;
+  std::cout << "SIFS elapsed! Sending ACK" << std::endl;
   _link->send(_ack_queue.front());
   _ack_queue.pop_front();
 }
@@ -155,6 +174,8 @@ void WifiInterface::onMessageReceived(Event * e)
 {
   DBGENTER(_ETHINTER_DBG);
 
+  std::cout << "Message received" << std::endl;
+
   if (_collision_detected) {
     _collision_detected = false;
     return;
@@ -164,18 +185,27 @@ void WifiInterface::onMessageReceived(Event * e)
   if (_incoming_message->destInterface() == this) {
     // Frame is for me, ACK must be sent
 
-    Message * m_ack = new Message(10,
-                                  _node,
-                                  _incoming_message->destInterface()->node());
-    sendACK(m_ack);
-
-    // Check if it has to be forwarded
-    if (_incoming_message->destNode() == _node) {
-      // Message is for my node
-      _node->put(_incoming_message);
+    if (_incoming_message->isACK()) {
+      std::cout << "ACK received" << std::endl;
+      _out_queue.pop_front();
     } else {
-      // Message must be forwarded
-      send(_incoming_message);
+      Message * m_ack = new Message(10,
+                                    _node,
+                                    _incoming_message->destInterface()->node(),
+                                    true);
+      m_ack->destInterface(_incoming_message->sourceInterface());
+      m_ack->sourceInterface(this);
+
+      sendACK(m_ack);
+
+      // Check if it has to be forwarded
+      if (_incoming_message->destNode() == _node) {
+        // Message is for my node
+        _node->put(_incoming_message);
+      } else {
+        // Message must be forwarded
+        send(_incoming_message);
+      }
     }
   }
 }
@@ -183,6 +213,8 @@ void WifiInterface::onMessageReceived(Event * e)
 void WifiInterface::receive(Message * m)
 {
   DBGTAG(_ETHINTER_DBG, getName() + "::get()");
+
+  std::cout << "Incoming communication" << std::endl;
 
   switch(_status) {
     case IDLE:
