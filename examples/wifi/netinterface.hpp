@@ -1,6 +1,7 @@
 #ifndef __NETINTERFACE_HPP__
 #define __NETINTERFACE_HPP__
 
+#include <memory>
 #include <deque>
 #include <string>
 
@@ -34,7 +35,7 @@ public:
   virtual ~NetInterface();
 
   virtual Node * node() = 0;
-  virtual void send(Message * m) = 0;
+  virtual void send(std::unique_ptr<Message> &m) = 0;
   virtual void receive(Message * n) = 0;
 };
 
@@ -82,13 +83,13 @@ class WifiInterface : public NetInterface
    * Sends ACK message to sender interface
    * @param m ACK message
    */
-  void sendACK(Message * m);
+  void sendACK(std::unique_ptr<Message> & m);
   void incrementBackoff();
   int getBackoff();
 
 protected:
-  std::deque<Message *> _out_queue;
-  std::deque<Message *> _ack_queue;
+  std::deque<std::unique_ptr<Message>> _out_queue;
+  std::deque<std::unique_ptr<Message>> _ack_queue;
 
   const int _c_wMin = 1;
   const int _c_wMax = 50000;
@@ -167,7 +168,7 @@ public:
    * to send the message.
    * @param m message to be sent
    */
-  virtual void send(Message * m);
+  virtual void send(std::unique_ptr<Message> &m);
   /**
    * Link calls this function, meaning that the message is
    * sent from the link to the interface.

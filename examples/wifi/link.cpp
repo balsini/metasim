@@ -17,11 +17,11 @@ WifiLink::WifiLink(const std::string &name)
 
 WifiLink::~WifiLink() {}
 
-void WifiLink::send(Message *m)
+void WifiLink::send(std::unique_ptr<Message> &m)
 {
   for (auto o : _interfaces) {
     //std::cout << "Broadcasting message to: " << o->getName() << std::endl;
-    o->receive(m);
+    o->receive(m.get());
   }
 }
 

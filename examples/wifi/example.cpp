@@ -9,15 +9,15 @@
 
 using namespace MetaSim;
 
-const int ROWS = 4;
-const int COLUMNS = 4;
+const int ROWS = 2;
+const int COLUMNS = 2;
 
 const double UMIN = 0.5;
 const double UMAX = 0.9;
 const double USTEP = 0.1;
 
 const unsigned AVG_LEN = 800;
-const Tick SIM_LEN = (int) (AVG_LEN * 1000000);
+const Tick SIM_LEN = (int) (AVG_LEN * 10000);
 
 int main()
 {
@@ -42,7 +42,8 @@ int main()
    ***********************************/
   std::cout << "\nCreating Nodes ..." << std::endl;
 
-  ExponentialVar at(100000);
+  //auto at = std::make_shared<ExponentialVar>(1000);
+  auto at = std::make_shared<UniformVar>(50,1024);
 
   // First, generates the nodes inside the matrix
 
@@ -84,7 +85,7 @@ int main()
     //std::cout << "Generated source [" << 0 << " , " << c << "]" << std::endl;
     Source * s = experiment.addNode(std::make_pair(0, c),
                                     1.1,
-                                    &at);
+                                    at);
     s->addDest(n);
   }
   for (int r=1; r<ROWS-1; ++r) {
@@ -96,7 +97,7 @@ int main()
     //std::cout << "Generated source [" << r << " , " << 0 << "]" << std::endl;
     Source * s = experiment.addNode(std::make_pair(r, 0),
                                     1.1,
-                                    &at);
+                                    at);
     s->addDest(n);
   }
 
@@ -119,17 +120,17 @@ int main()
   //std::cout << "Generated source [" << 0 << " , " << COLUMNS-1 << "]" << std::endl;
   Source * str = experiment.addNode(std::make_pair(0, COLUMNS-1),
                                     1.1,
-                                    &at);
+                                    at);
 
   //std::cout << "Generated source [" << ROWS-1 << " , " << 0 << "]" << std::endl;
   Source * sbl = experiment.addNode(std::make_pair(ROWS-1, 0),
                                     1.1,
-                                    &at);
+                                    at);
 
   //std::cout << "Generated source [" << 0 << " , " << 0 << "]" << std::endl;
   Source * stl = experiment.addNode(std::make_pair(0, 0),
                                     1.1,
-                                    &at);
+                                    at);
   str->addDest(nbr);
   sbl->addDest(nbr);
   stl->addDest(str);

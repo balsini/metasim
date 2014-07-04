@@ -49,7 +49,7 @@ Source * Experiment::createNode(std::pair <int,int> p,
                               double radius,
                               unsigned int nodeId,
                               const std::string &name,
-                              RandomVar * a)
+                              std::shared_ptr<RandomVar> a)
 {
   ///////////////////////////
   // Node Creation
@@ -118,7 +118,7 @@ Node * Experiment::addNode(std::pair <int,int> p, double radius)
   return n;
 }
 
-Source * Experiment::addNode(std::pair <int,int> p, double radius, RandomVar * a)
+Source * Experiment::addNode(std::pair <int,int> p, double radius, std::shared_ptr<RandomVar> a)
 {
   std::string name = "Node_";
 
@@ -157,12 +157,12 @@ void Experiment::start(double UMIN,
     double l = 6 * AVG_LEN / u;
 
     for (auto o : _nodes)
-      o->setInterval(auto_ptr<RandomVar>(new UniformVar(1,l)));
+      o->setInterval(std::shared_ptr<RandomVar>(new UniformVar(1,l)));
 
-    SIMUL.dbg.setStream("log.txt");
-    SIMUL.dbg.enable(_ETHLINK_DBG);
-    SIMUL.dbg.enable(_ETHINTER_DBG);
-    SIMUL.dbg.enable(_NODE_DBG);
+    //SIMUL.dbg.setStream("log.txt");
+    //SIMUL.dbg.enable(_ETHLINK_DBG);
+    //SIMUL.dbg.enable(_ETHINTER_DBG);
+    //SIMUL.dbg.enable(_NODE_DBG);
 
     try {
       cout << "U = " << u << endl;

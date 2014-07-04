@@ -46,12 +46,12 @@ class Experiment
                     unsigned int nodeId,
                     const std::string &name);
   Source * createNode(std::pair <int,int> p,
-                    double radius,
-                    unsigned int nodeId,
-                    const std::string &name,
-                    RandomVar * a);
+                      double radius,
+                      unsigned int nodeId,
+                      const std::string &name,
+                      std::shared_ptr<RandomVar> a);
   WifiInterface * createInterface(Node * n,
-                       const std::string &name, double radius);
+                                  const std::string &name, double radius);
   void createLink(const std::string &name, WifiInterface * n_int);
 
 public:
@@ -64,7 +64,7 @@ public:
    */
   Node * addNode(std::pair <int,int> p, double radius);
 
-  Source * addNode(std::pair <int,int> p, double radius, RandomVar * a);
+  Source * addNode(std::pair <int,int> p, double radius, std::shared_ptr<RandomVar> a);
 
   /**
    * Prepares all the data and starts the experiment

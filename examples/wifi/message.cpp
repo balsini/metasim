@@ -44,22 +44,22 @@ void Message::destInterface(NetInterface *n)
   _dst_net_interf = n;
 }
 
-NetInterface *Message::sourceInterface()
+NetInterface * Message::sourceInterface()
 {
   return _src_net_interf;
 }
 
-NetInterface *Message::destInterface()
+NetInterface * Message::destInterface()
 {
   return _dst_net_interf;
 }
 
-Node *Message::sourceNode()
+Node * Message::sourceNode()
 {
   return _src;
 }
 
-Node *Message::destNode()
+Node * Message::destNode()
 {
   return _dst;
 }

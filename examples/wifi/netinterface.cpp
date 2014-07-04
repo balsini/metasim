@@ -205,11 +205,12 @@ void WifiInterface::onMessageReceived(Event * e)
 {
   DBGENTER(_ETHINTER_DBG);
 
-  /*
+/*
   std::cout << this->getName() << ": Message received from "
             << _incoming_message->sourceInterface()->getName()
             << std::endl;
-*/
+            */
+
   if (_collision_detected) {
     //std::cout << "\tCollision Detected, dropping" << std::endl;
     _collision_detected = false;
@@ -228,15 +229,17 @@ void WifiInterface::onMessageReceived(Event * e)
       _status = IDLE;
     } else {
       //std::cout << "\tNormal Message" << std::endl;
+
       Message * m_ack = new Message(10,
                                     _node,
                                     _incoming_message->destInterface()->node(),
                                     _incoming_message->id(),
                                     true);
-      m_ack->destInterface(_incoming_message->sourceInterface());
-      m_ack->sourceInterface(this);
+      auto m_ack_unique = std::unique_ptr<Message>(m_ack);
+      m_ack_unique->destInterface(_incoming_message->sourceInterface());
+      m_ack_unique->sourceInterface(this);
 
-      sendACK(m_ack);
+      sendACK(m_ack_unique);
 
       // Check if it has to be forwarded
       if (_incoming_message->destNode() == _node) {
@@ -245,27 +248,29 @@ void WifiInterface::onMessageReceived(Event * e)
         _status = IDLE;
       } else {
         // Message must be forwarded
-        send(_incoming_message);
+        auto out_msg = std::unique_ptr<Message>(_incoming_message);
+        send(out_msg);
       }
     }
   } else {
     //std::cout << "\tWrong Interface, dropping" << std::endl;
     _status = IDLE;
   }
+
   //if (_status == IDLE)
   //  trySend();
 }
 
-void WifiInterface::sendACK(Message * m)
+void WifiInterface::sendACK(std::unique_ptr<Message> &m)
 {
   //std::cout << this->getName() << ": Awaiting for SIFS" << std::endl;
-  _ack_queue.push_back(m);
+  _ack_queue.push_back(std::move(m));
 
   _status = WAITING_FOR_SIFS;
   _wait_for_SIFS_evt.post(SIMUL.getTime() + Tick(_SIFS));
 }
 
-void WifiInterface::send(Message *m)
+void WifiInterface::send(std::unique_ptr<Message> &m)
 {
   DBGENTER(_ETHINTER_DBG);
 
@@ -273,7 +278,7 @@ void WifiInterface::send(Message *m)
 
   m->sourceInterface(this);
   m->destInterface(routingProtocol(m->destNode()));
-  _out_queue.push_back(m);
+  _out_queue.push_back(std::move(m));
 
   trySend();
 }

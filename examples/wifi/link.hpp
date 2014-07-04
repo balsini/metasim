@@ -22,7 +22,7 @@ public:
   Link(const std::string &name);
   virtual ~Link();
 
-  virtual void send(Message * m) = 0;
+  virtual void send(std::unique_ptr<Message> &m) = 0;
 };
 
 class WifiLink : public Link
@@ -34,7 +34,7 @@ public:
   WifiLink(const std::string &name);
   virtual ~WifiLink();
 
-  virtual void send(Message *m);
+  virtual void send(std::unique_ptr<Message> &m);
 
   void addNode(Node * n);
 

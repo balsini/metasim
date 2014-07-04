@@ -28,13 +28,18 @@ class Node : public Entity
   int _consumed;
 
 protected:
+  /**
+   * Wifi MAC Interface
+   */
   WifiInterface * _net_interf;
-  std::auto_ptr<RandomVar> _interval;
   std::pair <double, double> _position;
 
-public:
-  GEvent<Node> _recv_evt;
+  /**
+   * @brief _at message production speed
+   */
+  std::shared_ptr<RandomVar> _at;
 
+public:
   /**
    * Node creator
    * @param name name of the node
@@ -48,7 +53,7 @@ public:
    * Gets node position
    * @return node position
    */
-  std::pair <double, double> position() { return _position; }
+  std::pair <double, double> position();
 
   /**
    * Gets node radius
@@ -60,19 +65,19 @@ public:
    * The net interface connected to the node
    * @returns pointer to the node interface
    */
-  WifiInterface * netInterface() { return _net_interf; }
+  WifiInterface * netInterface();
+
   /**
    * Sets the node's wifi network interface
    * @param n WifiInterface pointer
    */
-
-  void netInterface(WifiInterface * n) { _net_interf = n; }
+  void netInterface(WifiInterface * n);
 
   /**
    * Sets the time interval
    * @param i time interval random value
    */
-  void setInterval(std::auto_ptr<RandomVar> i) { _interval = i; }
+  void setInterval(const std::shared_ptr<RandomVar> &i);
 
   virtual void put(Message * m);
 
@@ -89,10 +94,6 @@ public:
  */
 class Source : public Node
 {
-  /**
-   * @brief _at message production speed
-   */
-  RandomVar * _at;
   /**
    * @brief _produced number of produced messages
    */
@@ -140,17 +141,13 @@ public:
    */
   Source(const std::string &n,
          std::pair <double, double> position,
-         RandomVar * a) :
-    Node(n, position),
-    _at(a),
-    _produced(0),
-    _prodEvent(*this) {}
+         std::shared_ptr<RandomVar> &a);
 
   /**
    * Adds a new destination node
    * @param n destination node
    */
-  void addDest(Node * n) { _dest.push_back(n); }
+  void addDest(Node * n);
 
   /**
    * Produces a message and sends it to the

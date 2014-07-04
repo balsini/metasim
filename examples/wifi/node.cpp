@@ -20,6 +20,36 @@ void Node::newRun()
   _consumed = 0;
 }
 
+void Node::setInterval(const std::shared_ptr<RandomVar> &i)
+{
+  _at = i;
+}
+
+Source::Source(const std::string &n,
+               std::pair <double, double> position,
+               std::shared_ptr<RandomVar> & a) :
+  Node(n, position),
+  _produced(0),
+  _prodEvent(*this)
+{
+  _at = a;
+}
+
+std::pair <double, double> Node::position()
+{
+  return _position;
+}
+
+void Node::netInterface(WifiInterface * n)
+{
+  _net_interf = n;
+}
+
+WifiInterface * Node::netInterface()
+{
+  return _net_interf;
+}
+
 void Source::newRun()
 {
   //std::cout << "Source::newRun()" << std::endl;
@@ -37,29 +67,29 @@ void Node::onMessageReceived(Message *m)
 
 void Source::produce()
 {
-  UniformVar lenRand(0,2400);
-  UniformVar toRand(0, _dest.size());
-  UniformVar idRand(0, 32767);
-  int to = toRand.get();
+  if (_produced < 100) {
+    UniformVar toRand(0, _dest.size());
+    UniformVar idRand(0, 32767);
 
-  //std::cout << this->getName() << ": sending message to: " <<  _dest.at(to)->getName() << std::endl;
-  int msgLen = lenRand.get();
+    //std::cout << this->getName() << ": sending message to: " <<  _dest.at(to)->getName() << std::endl;
+    int msgLen = 512;
 
-  Message * m = new Message(msgLen, this, _dest.at(to), idRand.get());
-  m->setTransTime(Tick(msgLen));
+    auto m = unique_ptr<Message>(new Message(msgLen, this, _dest.at(toRand.get()), idRand.get()));
+    m->setTransTime(Tick(msgLen));
 
-  DBGENTER(_NODE_DBG);
-  DBGPRINT("dest node = " << _dest.at(to)->getName());
-
-  _net_interf->send(m);
-  _produced++;
-  _prodEvent.post(SIMUL.getTime() + Tick(_at->get()));
+    _net_interf->send(m);
+    _produced++;
+    _prodEvent.post(SIMUL.getTime() + Tick(_at->get()));
+  }
 }
-
-
 
 void Node::put(Message * m)
 {
   _consumed++;
   //std::cout << this->getName() << ": received message from: " << m->sourceNode()->getName() << std::endl;
+}
+
+void Source::addDest(Node * n)
+{
+  _dest.push_back(n);
 }

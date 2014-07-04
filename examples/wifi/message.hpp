@@ -30,7 +30,11 @@ class Message
   NetInterface *_src_net_interf;
 
 public:
-  Message(int l, Node * s, Node * d, int id, bool ack = false);
+  Message(int l,
+          Node * s,
+          Node * d,
+          int id = 0,
+          bool ack = false);
 
   void setTransTime(MetaSim::Tick t);
   MetaSim::Tick getTransTime();
@@ -40,14 +44,14 @@ public:
   bool isACK() { return _ack; }
   int id() { return _id; }
 
-  void sourceInterface(NetInterface *n);
-  void destInterface(NetInterface *n);
+  void sourceInterface(NetInterface * n);
+  void destInterface(NetInterface * n);
 
-  NetInterface *sourceInterface();
-  NetInterface *destInterface();
+  NetInterface * sourceInterface();
+  NetInterface * destInterface();
 
-  Node *sourceNode();
-  Node *destNode();
+  Node * sourceNode();
+  Node * destNode();
 };
 
 #endif
