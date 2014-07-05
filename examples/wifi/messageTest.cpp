@@ -11,7 +11,7 @@
 
 using namespace MetaSim;
 
-TEST_CASE( "Message", "[message]" )
+TEST_CASE( "Message Test", "[message]" )
 {
   Node * n_src = (Node *) 0x1;
   Node * n_dst = (Node *) 0x2;

@@ -187,6 +187,8 @@ public:
   void trySend();
   void printStatus();
 
+  WifiInterfaceStatus status();
+
   void newRun();
   void endRun();
 };

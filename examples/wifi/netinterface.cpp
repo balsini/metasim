@@ -347,6 +347,11 @@ void WifiInterface::receive(Message * m)
   }
 }
 
+WifiInterfaceStatus WifiInterface::status()
+{
+  return _status;
+}
+
 void WifiInterface::printStatus()
 {
   switch(_status) {

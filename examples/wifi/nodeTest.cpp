@@ -16,9 +16,9 @@ TEST_CASE( "Node Test", "[node]" )
 {
   auto at = std::make_shared<UniformVar>(50,1024);
 
-  auto s = std::make_shared<Source>(std::string("src1"), std::make_pair(0.0, 0.0), at);
+  auto s = std::make_shared<Source>(std::string("src1"), std::make_pair(0, 0), at);
   auto ss = static_pointer_cast<Node>(s);
-  auto d = std::make_shared<Node>(std::string("dst1"), std::make_pair(0.0, 1.0));
+  auto d = std::make_shared<Node>(std::string("dst1"), std::make_pair(0, 1));
 
   auto s_int = std::make_shared<WifiInterface>("s_int", 1.1, ss);
   auto d_int = std::make_shared<WifiInterface>("d_int", 1.1, d);
@@ -44,10 +44,13 @@ TEST_CASE( "Node Test", "[node]" )
   // Checks if message is correctly consumed
   REQUIRE( d->consumed() == 0 );
 
-  Message * msg = new Message(10, s.get(), d.get(), 0, false);
-  auto msg_unique = std::unique_ptr<Message>(msg);
+  auto msg = std::unique_ptr<Message>(new Message(10,
+                                                  s.get(),
+                                                  d.get(),
+                                                  0,
+                                                  false));
 
-  d->put(msg_unique);
+  d->put(msg);
 
   REQUIRE( d->consumed() == 1 );
 
