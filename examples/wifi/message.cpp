@@ -2,21 +2,14 @@
 #include "netinterface.hpp"
 #include "node.hpp"
 
-using namespace std;
-using namespace MetaSim;
-
 Message::Message(int l, Node *s, Node *d, int id, bool ack) :
-  _len(l), _dst(d), _src(s), _dst_net_interf(NULL),
-  _src_net_interf(NULL)
-{
-  _dst_net_interf = _dst->netInterface();
-  _src_net_interf = _src->netInterface();
-  _start_time = 0;
-  _trans_time = 0;
-  _arr_time = 0;
-  _ack = ack;
-  _id = id;
-}
+  _len(l),
+  _id(id),
+  _ack(ack),
+  _trans_time(0),
+  _dst(d),
+  _src(s)
+{}
 
 void Message::setTransTime(Tick t)
 {
@@ -27,7 +20,6 @@ Tick Message::getTransTime()
 {
   return _trans_time;
 }
-
 
 int Message::length()
 {
