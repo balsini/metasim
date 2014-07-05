@@ -54,30 +54,24 @@ TEST_CASE( "Node Test", "[node]" )
 
   REQUIRE( d->consumed() == 1 );
 
-  SECTION( "Node produces the exact number of messages" )
-  {
-    SIMUL.initSingleRun();
+  SIMUL.initSingleRun();
 
-    // First message has to be produced
+  // First message has to be produced
 
-    REQUIRE( s->produced() == 0 );
+  REQUIRE( s->produced() == 0 );
 
+  SIMUL.sim_step();
+
+  REQUIRE( s->produced() == 1 );
+
+  // Exactly 100 messages must be produced
+
+  while ( s->produced() < 100)
     SIMUL.sim_step();
 
-    REQUIRE( s->produced() == 1 );
+  SIMUL.run(50000);
 
-    // Exactly 100 messages must be produced
+  REQUIRE( s->produced() == 100 );
 
-    while ( s->produced() < 100) {
-      SIMUL.sim_step();
-    }
-
-    for (unsigned int i=0; i<50000; i++) {
-      SIMUL.sim_step();
-    }
-
-    REQUIRE( s->produced() == 100 );
-
-    SIMUL.endSingleRun();
-  }
+  SIMUL.endSingleRun();
 }

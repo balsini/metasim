@@ -5,7 +5,7 @@ AM_LDFLAGS = -L${top}/src/
 
 LDADD = -lmetasim
 
-noinst_PROGRAMS = nodeTest linkTest messageTest wifi
+noinst_PROGRAMS = netInterfaceTest nodeTest linkTest messageTest wifi
 
 nodeTest_SOURCES = nodeTest.cpp\
 	link.cpp \
@@ -28,6 +28,16 @@ messageTest_SOURCES = messageTest.cpp\
 	node.hpp
 
 linkTest_SOURCES = linkTest.cpp\
+	link.cpp \
+	link.hpp \
+	message.cpp \
+	message.hpp \
+	netinterface.cpp \
+	netinterface.hpp \
+	node.cpp \
+	node.hpp
+
+netInterfaceTest_SOURCES = netInterfaceTest.cpp\
 	link.cpp \
 	link.hpp \
 	message.cpp \

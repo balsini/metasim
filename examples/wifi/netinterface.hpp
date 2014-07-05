@@ -36,7 +36,7 @@ public:
 
   virtual std::shared_ptr<Node> node() = 0;
   virtual void send(std::unique_ptr<Message> &m) = 0;
-  virtual void receive(Message * n) = 0;
+  virtual void receive(std::shared_ptr<Message> &n) = 0;
 };
 
 /**
@@ -104,7 +104,7 @@ protected:
   int _backoff_timer;
   int _c_w;
 
-  Message * _incoming_message;
+  std::shared_ptr<Message> _incoming_message;
   std::shared_ptr<WifiLink> _link;
   double _radius;
 
@@ -173,7 +173,7 @@ public:
    * sent from the link to the interface.
    * @param m received message
    */
-  virtual void receive(Message * m);
+  virtual void receive(std::shared_ptr<Message> &m);
   /**
    * This function is called when the transmission is completed.
    * Collisions are checked here.

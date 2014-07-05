@@ -22,9 +22,11 @@ WifiLink::~WifiLink() {}
 
 void WifiLink::send(std::unique_ptr<Message> &m)
 {
+  auto m_shared = std::make_shared<Message>(Message(*m.get()));
+
   for (auto o : _interfaces) {
     //std::cout << "Broadcasting message to: " << o->getName() << std::endl;
-    o->receive(m.get());
+    o->receive(m_shared);
   }
 }
 

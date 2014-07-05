@@ -63,6 +63,8 @@ public:
           int id = 0,
           bool ack = false);
 
+  Message(const Message &other);
+
   /**
    * Sets the number of ticks needed for message
    * transmission
@@ -75,26 +77,26 @@ public:
    * the message
    * @return ticks required for message transmission
    */
-  MetaSim::Tick transTime();
+  MetaSim::Tick transTime() const;
 
   /**
    * Message length
    * @return the length of the message
    */
-  int length();
+  int length() const;
 
   /**
    * Checks the message type
    * @return true if the message is an ACK, false if it
    *   is a normal message
    */
-  bool isACK() { return _ack; }
+  bool isACK() const { return _ack; }
 
   /**
    * Message identifier, needed to link a message to its ACK
    * @return the message id
    */
-  int id() { return _id; }
+  int id() const { return _id; }
 
   /**
    * Sets the MAC level source net interface
@@ -112,25 +114,25 @@ public:
    * Gets the MAC level source net interface
    * @param n source net interface pointer
    */
-  NetInterface * sourceInterface();
+  NetInterface * sourceInterface() const;
 
   /**
    * Gets the MAC level destination net interface
    * @param n destination net interface pointer
    */
-  NetInterface * destInterface();
+  NetInterface * destInterface() const;
 
   /**
    * Gets the source node
    * @return source node
    */
-  Node * sourceNode();
+  Node * sourceNode() const;
 
   /**
    * Gets the destination node
    * @return destination node
    */
-  Node * destNode();
+  Node * destNode() const;
 };
 
 #endif

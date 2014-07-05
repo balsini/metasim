@@ -47,7 +47,7 @@ public:
   WifiLink(const std::string &name);
   virtual ~WifiLink();
 
-  virtual void send(std::unique_ptr<Message> &m);
+  virtual void send(std::unique_ptr<Message> & m);
 
   void addInterface(std::shared_ptr<WifiInterface> &i);
 

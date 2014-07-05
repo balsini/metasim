@@ -47,11 +47,11 @@ WifiInterface::~WifiInterface()
 
 void WifiInterface::newRun()
 {
+  _status = IDLE;
   _c_w = _c_wMin;
   _ack_queue.clear();
   _out_queue.clear();
   _collision_detected = false;
-  _status = IDLE;
   _corrupted_messages = 0;
 }
 
@@ -254,7 +254,7 @@ void WifiInterface::onMessageReceived(Event * e)
         _status = IDLE;
       } else {
         // Message must be forwarded
-        auto out_msg = std::unique_ptr<Message>(_incoming_message);
+        auto out_msg = std::unique_ptr<Message>(new Message(*_incoming_message));
         send(out_msg);
       }
     }
@@ -302,7 +302,7 @@ void WifiInterface::trySend()
   //std::cout << "DONE" << std::endl;
 }
 
-void WifiInterface::receive(Message * m)
+void WifiInterface::receive(std::shared_ptr<Message> &m)
 {
   DBGTAG(_ETHINTER_DBG, getName() + "::get()");
 
@@ -316,13 +316,26 @@ void WifiInterface::receive(Message * m)
   //printStatus();
   switch(_status) {
     case RECEIVING_MESSAGE:
+      // The previously transferring message is now corrupted, so:
+      // A collision has been detected
       _collision_detected = true;
+      // The number of corrupted messages is increased for
+      //statistics
       _corrupted_messages++;
-      _data_received_evt.drop();
-      _data_received_evt.post(SIMUL.getTime() + m->transTime());
+      // Now we have to wait until the longest incoming transmission
+      // is completed
+
+      //std::cout << "Last _data_received_evt at: " << _data_received_evt.getTime() << std::endl;
+      //std::cout << "Next _data_received_evt at: " << SIMUL.getTime() + m->transTime() << std::endl;
+
+      if (_data_received_evt.getTime() < SIMUL.getTime() + m->transTime()) {
+        _data_received_evt.drop();
+        _data_received_evt.post(SIMUL.getTime() + m->transTime());
+      }
+      break;
     case IDLE:
       _incoming_message = m;
-      _data_received_evt.drop();
+      //_data_received_evt.drop();
       _data_received_evt.post(SIMUL.getTime() + m->transTime());
       _status = RECEIVING_MESSAGE;
       break;
