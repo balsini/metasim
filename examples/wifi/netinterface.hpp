@@ -162,7 +162,6 @@ public:
   virtual void onEndACKTrans(MetaSim::Event * e);
 
   WifiInterface * routingProtocol(Node * n);
-  void node(Node * n) {_node = n; }
   /**
    * Node calls this function, requesting the interface
    * to send the message.

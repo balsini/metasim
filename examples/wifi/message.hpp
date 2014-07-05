@@ -6,6 +6,7 @@
 #define _MESSAGE_DBG "EthernetLink"
 
 class Node;
+class Source;
 class NetInterface;
 
 #include "netinterface.hpp"
@@ -67,14 +68,14 @@ public:
    * transmission
    * @param t message transmission time (in ticks)
    */
-  void setTransTime(MetaSim::Tick t);
+  void transTime(MetaSim::Tick t);
 
   /**
    * Returns the number of ticks required for transmitting
    * the message
    * @return ticks required for message transmission
    */
-  MetaSim::Tick getTransTime();
+  MetaSim::Tick transTime();
 
   /**
    * Message length

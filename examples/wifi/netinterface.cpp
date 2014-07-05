@@ -10,7 +10,7 @@
 using namespace MetaSim;
 
 NetInterface::NetInterface(const std::string &name, Node* const &n) :
-  Entity(name)
+  Entity(name), _node(n)
 {}
 
 NetInterface::~NetInterface()
@@ -70,17 +70,24 @@ void WifiInterface::endRun()
 
 WifiInterface * WifiInterface::routingProtocol(Node * n)
 {
+  //std::cout << "routingProtocol" << std::endl;
   double myPosR = std::get<0>(_node->position()),
       myPosC = std::get<1>(_node->position()),
       hisPosR = std::get<0>(n->position()),
       hisPosC = std::get<1>(n->position());
 
-  if (myPosR == hisPosR) {
-    // Send Bottom
-    return _link->getRightInterface();
-  } else if (myPosC == hisPosC) {
-    // Send Down
-    return _link->getDownInterface();
+  try {
+    if (myPosR == hisPosR) {
+      // Send Bottom
+      //std::cout << "rightInterface" << std::endl;
+      return _link->getRightInterface();
+    } else if (myPosC == hisPosC) {
+      // Send Down
+      //std::cout << "downInterface" << std::endl;
+      return _link->getDownInterface();
+    }
+  } catch (exception& e) {
+    std::cout << e.what() << std::endl;
   }
   return 0;
 }
@@ -107,7 +114,7 @@ void WifiInterface::onBackoffTimeElapsed(MetaSim::Event * e)
 
   //std::cout << _out_queue.size() << std::endl;
   _end_trans_evt.drop();
-  _end_trans_evt.post(SIMUL.getTime() + Tick(_out_queue.front()->getTransTime()));
+  _end_trans_evt.post(SIMUL.getTime() + Tick(_out_queue.front()->transTime()));
 
   _link->send(_out_queue.front());
   _status = SENDING_MESSAGE;
@@ -149,7 +156,7 @@ void WifiInterface::onDIFSElapsed(MetaSim::Event * e)
               */
 
     _end_trans_evt.drop();
-    _end_trans_evt.post(SIMUL.getTime() + Tick(_out_queue.front()->getTransTime()));
+    _end_trans_evt.post(SIMUL.getTime() + Tick(_out_queue.front()->transTime()));
     _link->send(_out_queue.front());
     _status = SENDING_MESSAGE;
   }
@@ -161,8 +168,8 @@ void WifiInterface::onSIFSElapsed(MetaSim::Event * e)
   std::cout << this->getName() << ": SIFS elapsed! Sending ACK to "
             << _ack_queue.front()->destInterface()->getName() << std::endl;
 */
-  _end_ACKtrans_evt.drop();
-  _end_ACKtrans_evt.post(SIMUL.getTime() + Tick(_ack_queue.front()->getTransTime()));
+  //_end_ACKtrans_evt.drop();
+  _end_ACKtrans_evt.post(SIMUL.getTime() + Tick(_ack_queue.front()->transTime()));
   _link->send(_ack_queue.front());
   _ack_queue.pop_front();
 }
@@ -205,7 +212,7 @@ void WifiInterface::onMessageReceived(Event * e)
 {
   DBGENTER(_ETHINTER_DBG);
 
-/*
+  /*
   std::cout << this->getName() << ": Message received from "
             << _incoming_message->sourceInterface()->getName()
             << std::endl;
@@ -278,6 +285,7 @@ void WifiInterface::send(std::unique_ptr<Message> &m)
 
   m->sourceInterface(this);
   m->destInterface(routingProtocol(m->destNode()));
+
   _out_queue.push_back(std::move(m));
 
   trySend();
@@ -307,12 +315,16 @@ void WifiInterface::receive(Message * m)
   MetaSim::Tick b;
 
   //printStatus();
-
   switch(_status) {
+    case RECEIVING_MESSAGE:
+      _collision_detected = true;
+      _corrupted_messages++;
+      _data_received_evt.drop();
+      _data_received_evt.post(SIMUL.getTime() + m->transTime());
     case IDLE:
       _incoming_message = m;
       _data_received_evt.drop();
-      _data_received_evt.post(SIMUL.getTime() + m->getTransTime());
+      _data_received_evt.post(SIMUL.getTime() + m->transTime());
       _status = RECEIVING_MESSAGE;
       break;
     case WAITING_FOR_DIFS:
@@ -324,18 +336,13 @@ void WifiInterface::receive(Message * m)
       // Timer is decremented only when channel is sensed idle
       b = _wait_for_backoff_evt.getTime();
 
-      /*
-      std::cout << SIMUL.getTime()
-                << " : Timer is decremented only when channel is sensed idle: "
-                << b << std::endl;
-*/
+
+      //std::cout << SIMUL.getTime()
+      //          << " : Timer is decremented only when channel is sensed idle: "
+      //          << b << std::endl;
+
       _wait_for_backoff_evt.drop();
-      _wait_for_backoff_evt.post(b + m->getTransTime());
-      break;
-    case RECEIVING_MESSAGE:
-      _collision_detected = true;
-      _corrupted_messages++;
-      return;
+      _wait_for_backoff_evt.post(b + m->transTime());
       break;
     default: break;
   }

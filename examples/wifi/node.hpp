@@ -1,6 +1,7 @@
 #ifndef __NODE_HPP__
 #define __NODE_HPP__
 
+#include <exception>
 #include <memory>
 #include <vector>
 #include <string>
@@ -10,6 +11,20 @@
 #include "netinterface.hpp"
 
 #include <metasim.hpp>
+
+class NodeException: public std::exception
+{
+  std::string err;
+public:
+  NodeException(const std::string &e)
+  {
+    err = e;
+  }
+  virtual const char * what() const throw()
+  {
+    return err.c_str();
+  }
+};
 
 using namespace MetaSim;
 
@@ -56,12 +71,6 @@ public:
   std::pair <double, double> position();
 
   /**
-   * Gets node radius
-   * @return node radius
-   */
-  double radius();
-
-  /**
    * The net interface connected to the node
    * @returns pointer to the node interface
    */
@@ -81,7 +90,11 @@ public:
 
   virtual void put(Message * m);
 
-  void onMessageReceived(Message * m);
+  /**
+   * Number of consumed messages
+   * @return the number of consumed messages
+   */
+  int consumed();
 
   virtual void newRun();
   virtual void endRun() {}
@@ -124,7 +137,14 @@ public:
      * @brief doit Performs the action: produces
      *   and sends message
      */
-    virtual void doit() { _n.produce(); }
+    virtual void doit()
+    {
+      try {
+        _n.produce();
+      } catch (exception& e) {
+        std::cout << e.what() << std::endl;
+      }
+    }
   };
 
   /**
@@ -141,7 +161,7 @@ public:
    */
   Source(const std::string &n,
          std::pair <double, double> position,
-         std::shared_ptr<RandomVar> &a);
+         const std::shared_ptr<RandomVar> &a);
 
   /**
    * Adds a new destination node
@@ -154,6 +174,12 @@ public:
    * network interface
    */
   void produce();
+
+  /**
+   * Number of produced messages
+   * @return the number of produced messages
+   */
+  int produced();
 
   virtual void newRun();
   virtual void endRun() {}

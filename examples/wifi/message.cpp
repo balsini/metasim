@@ -1,20 +1,22 @@
 #include "message.hpp"
 
-Message::Message(int l, Node *s, Node *d, int id, bool ack) :
+Message::Message(int l, Node * s, Node * d, int id, bool ack) :
   _len(l),
   _id(id),
   _ack(ack),
   _trans_time(0),
   _dst(d),
-  _src(s)
+  _src(s),
+  _dst_net_interf(0),
+  _src_net_interf(0)
 {}
 
-void Message::setTransTime(Tick t)
+void Message::transTime(Tick t)
 {
   _trans_time = t;
 }
 
-Tick Message::getTransTime()
+Tick Message::transTime()
 {
   return _trans_time;
 }

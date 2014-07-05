@@ -13,7 +13,10 @@ Link::Link(const std::string & name)
 Link::~Link() {}
 
 WifiLink::WifiLink(const std::string &name)
-  : Link(name) {}
+  : Link(name)
+{
+  _interfaces.clear();
+}
 
 WifiLink::~WifiLink() {}
 
@@ -25,12 +28,18 @@ void WifiLink::send(std::unique_ptr<Message> &m)
   }
 }
 
-void WifiLink::addNode(Node * n)
+void WifiLink::addInterface(WifiInterface * i)
 {
-  _interfaces.push_back(n->netInterface());
+  //std::cout << "Link: added interface" << std::endl;
+
+  _interfaces.push_back(i);
 }
 
-WifiInterface * WifiLink::getRightInterface() {
+WifiInterface * WifiLink::getRightInterface()
+{
+  if (_interfaces.size() == 0)
+    throw LinkException("Link is empty");
+
   WifiInterface * i = _interfaces.front();
   double maxRight = std::get<1>(_interfaces.front()->node()->position());
 
@@ -46,6 +55,9 @@ WifiInterface * WifiLink::getRightInterface() {
 }
 
 WifiInterface * WifiLink::getDownInterface() {
+  if (_interfaces.size() == 0)
+    throw LinkException("Link is empty");
+
   WifiInterface * i = _interfaces.front();
   double maxDown = std::get<0>(_interfaces.front()->node()->position());
 

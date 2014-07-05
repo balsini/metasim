@@ -1,6 +1,7 @@
 #ifndef __LINK_HPP__
 #define __LINK_HPP__
 
+#include <exception>
 #include <vector>
 #include <string>
 
@@ -9,6 +10,20 @@
 
 #include "netinterface.hpp"
 #include "node.hpp"
+
+class LinkException: public std::exception
+{
+  std::string err;
+public:
+  LinkException(const std::string &e)
+  {
+    err = e;
+  }
+  virtual const char * what() const throw()
+  {
+    return err.c_str();
+  }
+};
 
 class Message;
 class Node;
@@ -28,7 +43,6 @@ public:
 class WifiLink : public Link
 {
   std::vector<WifiInterface *> _interfaces;
-  std::vector<WifiInterface *> _contending;
 
 public:
   WifiLink(const std::string &name);
@@ -36,7 +50,7 @@ public:
 
   virtual void send(std::unique_ptr<Message> &m);
 
-  void addNode(Node * n);
+  void addInterface(WifiInterface * i);
 
   WifiInterface * getRightInterface();
   WifiInterface * getDownInterface();

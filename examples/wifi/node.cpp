@@ -2,10 +2,6 @@
 
 #include "node.hpp"
 
-using namespace MetaSim;
-
-/*-----------------------------------------------------*/
-
 Node::Node(const std::string &name,
            std::pair<double, double> position) :
   Entity(name)
@@ -25,9 +21,14 @@ void Node::setInterval(const std::shared_ptr<RandomVar> &i)
   _at = i;
 }
 
+int Node::consumed()
+{
+  return _consumed;
+}
+
 Source::Source(const std::string &n,
                std::pair <double, double> position,
-               std::shared_ptr<RandomVar> & a) :
+               const std::shared_ptr<RandomVar> &a) :
   Node(n, position),
   _produced(0),
   _prodEvent(*this)
@@ -57,25 +58,23 @@ void Source::newRun()
   _prodEvent.post(Tick(_at->get()));
 }
 
-void Node::onMessageReceived(Message *m)
-{
-  // simply, record the fact that the message has succesfully been
-  // received.
-
-  DBGTAG(_NODE_DBG, getName() + "::onMessageReceived()");
-}
-
 void Source::produce()
 {
   if (_produced < 100) {
+    if (_dest.size() == 0)
+      throw NodeException("Node messages has no destination");
+    if (_net_interf == nullptr)
+      throw NodeException("Node has no Network Interface");
+
     UniformVar toRand(0, _dest.size());
     UniformVar idRand(0, 32767);
+    Node * destinationNode = _dest.at(toRand.get());
 
-    //std::cout << this->getName() << ": sending message to: " <<  _dest.at(to)->getName() << std::endl;
+    //std::cout << this->getName() << ": sending message to: " <<  destinationNode->getName() << std::endl;
     int msgLen = 512;
 
-    auto m = unique_ptr<Message>(new Message(msgLen, this, _dest.at(toRand.get()), idRand.get()));
-    m->setTransTime(Tick(msgLen));
+    auto m = unique_ptr<Message>(new Message(msgLen, this, destinationNode, idRand.get()));
+    m->transTime(Tick(msgLen));
 
     _net_interf->send(m);
     _produced++;
@@ -92,4 +91,9 @@ void Node::put(Message * m)
 void Source::addDest(Node * n)
 {
   _dest.push_back(n);
+}
+
+int Source::produced()
+{
+  return _produced;
 }
