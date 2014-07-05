@@ -1,4 +1,4 @@
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
 #include <memory>
@@ -43,7 +43,10 @@ TEST_CASE( "Node Test", "[node]" )
   // Checks if message is correctly consumed
   REQUIRE( d->consumed() == 0 );
 
-  d->put((Message *)0x0);
+  Message * msg = new Message(10, s, d, 0, false);
+  auto msg_unique = std::unique_ptr<Message>(msg);
+
+  d->put(msg_unique);
 
   REQUIRE( d->consumed() == 1 );
 

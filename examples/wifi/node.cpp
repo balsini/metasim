@@ -82,7 +82,7 @@ void Source::produce()
   }
 }
 
-void Node::put(Message * m)
+void Node::put(std::unique_ptr<Message> &m)
 {
   _consumed++;
   //std::cout << this->getName() << ": received message from: " << m->sourceNode()->getName() << std::endl;

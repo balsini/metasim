@@ -88,7 +88,7 @@ public:
    */
   void setInterval(const std::shared_ptr<RandomVar> &i);
 
-  virtual void put(Message * m);
+  virtual void put(std::unique_ptr<Message> & m);
 
   /**
    * Number of consumed messages

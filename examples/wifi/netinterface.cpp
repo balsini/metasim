@@ -251,7 +251,7 @@ void WifiInterface::onMessageReceived(Event * e)
       // Check if it has to be forwarded
       if (_incoming_message->destNode() == _node) {
         // Message is for my node
-        _node->put(_incoming_message);
+        //_node->put(_incoming_message);
         _status = IDLE;
       } else {
         // Message must be forwarded
