@@ -9,6 +9,7 @@ class Node;
 class NetInterface;
 
 #include "netinterface.hpp"
+#include "node.hpp"
 
 class Message
 {

@@ -1,6 +1,4 @@
 #include "message.hpp"
-#include "netinterface.hpp"
-#include "node.hpp"
 
 Message::Message(int l, Node *s, Node *d, int id, bool ack) :
   _len(l),
