@@ -43,10 +43,6 @@ class Node : public Entity
   int _consumed;
 
 protected:
-  /**
-   * Wifi MAC Interface
-   */
-  WifiInterface * _net_interf;
   std::pair <double, double> _position;
 
   /**
@@ -54,9 +50,14 @@ protected:
    */
   std::shared_ptr<RandomVar> _at;
 
+  /**
+   * Wifi MAC Interface
+   */
+  std::shared_ptr<WifiInterface> _net_interf;
+
 public:
   /**
-   * Node creator
+   * Node constructor
    * @param name name of the node
    * @param position position of the node
    * @param radius radius of the node
@@ -74,13 +75,13 @@ public:
    * The net interface connected to the node
    * @returns pointer to the node interface
    */
-  WifiInterface * netInterface();
+  std::shared_ptr<WifiInterface> netInterface();
 
   /**
    * Sets the node's wifi network interface
    * @param n WifiInterface pointer
    */
-  void netInterface(WifiInterface * n);
+  void netInterface(std::shared_ptr<WifiInterface> & n);
 
   /**
    * Sets the time interval
@@ -115,7 +116,7 @@ class Source : public Node
   /**
    * @brief _dest destination nodes
    */
-  std::vector<Node *> _dest;
+  std::vector<std::shared_ptr<Node>> _dest;
 
 public:
   /**
@@ -167,7 +168,7 @@ public:
    * Adds a new destination node
    * @param n destination node
    */
-  void addDest(Node * n);
+  void addDest(std::shared_ptr<Node> n);
 
   /**
    * Produces a message and sends it to the

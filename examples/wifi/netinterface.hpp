@@ -28,13 +28,13 @@ enum WifiInterfaceStatus {
 class NetInterface : public MetaSim::Entity
 {
 protected:
-  Node *_node;
+  std::shared_ptr<Node> _node;
 
 public:
-  NetInterface(const std::string &name, Node * const &n);
+  NetInterface(const std::string &name, std::shared_ptr<Node> & n);
   virtual ~NetInterface();
 
-  virtual Node * node() = 0;
+  virtual std::shared_ptr<Node> node() = 0;
   virtual void send(std::unique_ptr<Message> &m) = 0;
   virtual void receive(Message * n) = 0;
 };
@@ -105,7 +105,7 @@ protected:
   int _c_w;
 
   Message * _incoming_message;
-  WifiLink * _link;
+  std::shared_ptr<WifiLink> _link;
   double _radius;
 
   WifiInterfaceStatus _status;
@@ -146,14 +146,14 @@ public:
    */
   MetaSim::GEvent<WifiInterface> _wait_for_ACK_evt;
 
-  WifiInterface(const std::string &name, double radius, Node * n);
+  WifiInterface(const std::string &name, double radius, std::shared_ptr<Node> &n);
   virtual ~WifiInterface();
 
-  void link(WifiLink * l);
-  WifiLink * link();
+  void link(std::shared_ptr<WifiLink> l);
+  std::shared_ptr<WifiLink> link();
 
   double radius() { return _radius; }
-  Node * node() { return _node; }
+  std::shared_ptr<Node> node() { return _node; }
 
   virtual void onStartTrans(MetaSim::Event * e);
   virtual void onDIFSElapsed(MetaSim::Event * e);
@@ -161,7 +161,7 @@ public:
   virtual void onEndTrans(MetaSim::Event * e);
   virtual void onEndACKTrans(MetaSim::Event * e);
 
-  WifiInterface * routingProtocol(Node * n);
+  std::shared_ptr<WifiInterface> routingProtocol(Node * n);
   /**
    * Node calls this function, requesting the interface
    * to send the message.

@@ -28,20 +28,20 @@ void WifiLink::send(std::unique_ptr<Message> &m)
   }
 }
 
-void WifiLink::addInterface(WifiInterface * i)
+void WifiLink::addInterface(std::shared_ptr<WifiInterface> &i)
 {
   //std::cout << "Link: added interface" << std::endl;
 
   _interfaces.push_back(i);
 }
 
-WifiInterface * WifiLink::getRightInterface()
+std::shared_ptr<WifiInterface> WifiLink::getRightInterface()
 {
   if (_interfaces.size() == 0)
     throw LinkException("Link is empty");
 
-  WifiInterface * i = _interfaces.front();
-  double maxRight = std::get<1>(_interfaces.front()->node()->position());
+  std::shared_ptr<WifiInterface> i = _interfaces.front();
+  double maxRight = std::get<1>(i->node()->position());
 
   // Search for the rightest
   for (auto o : _interfaces) {
@@ -54,12 +54,12 @@ WifiInterface * WifiLink::getRightInterface()
   return i;
 }
 
-WifiInterface * WifiLink::getDownInterface() {
+std::shared_ptr<WifiInterface> WifiLink::getDownInterface() {
   if (_interfaces.size() == 0)
     throw LinkException("Link is empty");
 
-  WifiInterface * i = _interfaces.front();
-  double maxDown = std::get<0>(_interfaces.front()->node()->position());
+  std::shared_ptr<WifiInterface> i = _interfaces.front();
+  double maxDown = std::get<0>(i->node()->position());
 
   // Search for the rightest
   for (auto o : _interfaces) {

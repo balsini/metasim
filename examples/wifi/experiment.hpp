@@ -10,29 +10,10 @@
 
 #include "node.hpp"
 
-class CollisionStat : public StatCount {
-public:
-  CollisionStat(const std::string &n) : StatCount(n) {}
-
-  void probe(Event * e)
-  {
-    record(1);
-  }
-
-  void attach(Entity * e)
-  {
-    WifiInterface * l = dynamic_cast<WifiInterface *>(e);
-    if (l == NULL)
-      throw BaseExc("Please, specify a Wifi Interface!");
-
-    //l->_collision_evt.addStat(this);
-  }
-};
-
 class Experiment
 {
   unsigned int nodeId;
-  std::vector<Node *> _nodes;
+  std::vector<std::shared_ptr<Node>> _nodes;
 
   /**
    * For each node, checks if other nodes are in range.
@@ -41,30 +22,38 @@ class Experiment
    */
   void generateLinks();
 
-  Node * createNode(std::pair <int,int> p,
-                    double radius,
-                    unsigned int nodeId,
-                    const std::string &name);
-  Source * createNode(std::pair <int,int> p,
-                      double radius,
-                      unsigned int nodeId,
-                      const std::string &name,
-                      const std::shared_ptr<RandomVar> &a);
-  WifiInterface * createInterface(Node * n,
-                                  const std::string &name, double radius);
-  void createLink(const std::string &name, WifiInterface * n_int);
+  std::shared_ptr<Node> createNode(std::pair <int,int> p,
+                                   double radius,
+                                   unsigned int nodeId,
+                                   const std::string &name);
+  std::shared_ptr<Source> createNode(std::pair <int,int> p,
+                                     double radius,
+                                     unsigned int nodeId,
+                                     const std::string &name,
+                                     const std::shared_ptr<RandomVar> &a);
+  std::shared_ptr<WifiInterface> createInterface(std::shared_ptr<Node> &n,
+                                                 const std::string &name, double radius);
+  void createLink(const std::string &name, std::shared_ptr<WifiInterface> &n_int);
 
 public:
   Experiment();
 
   /**
    * Creates a node, its interface and the link of the interface
-   * @param p node position.
-   * @param radius node radius.
+   * @param p node position
+   * @param radius node radius
+   * @return pointer to created object
    */
-  Node * addNode(std::pair <int,int> p, double radius);
+  std::shared_ptr<Node> addNode(std::pair <int,int> p, double radius);
 
-  Source * addNode(std::pair <int,int> p, double radius, const std::shared_ptr<RandomVar> &a);
+  /**
+   * Creates a source node, its interface and the link of the interface
+   * @param p node position
+   * @param radius node radius
+   * @param a message generation frequency
+   * @return pointer to created object
+   */
+  std::shared_ptr<Source> addNode(std::pair <int,int> p, double radius, const std::shared_ptr<RandomVar> &a);
 
   /**
    * Prepares all the data and starts the experiment

@@ -2,6 +2,7 @@
 #define __LINK_HPP__
 
 #include <exception>
+#include <memory>
 #include <vector>
 #include <string>
 
@@ -28,8 +29,6 @@ public:
 class Message;
 class Node;
 
-const char* const _ETHLINK_DBG = "EthernetLink";
-
 class Link
 {
   std::string _name;
@@ -42,7 +41,7 @@ public:
 
 class WifiLink : public Link
 {
-  std::vector<WifiInterface *> _interfaces;
+  std::vector<std::shared_ptr<WifiInterface>> _interfaces;
 
 public:
   WifiLink(const std::string &name);
@@ -50,10 +49,10 @@ public:
 
   virtual void send(std::unique_ptr<Message> &m);
 
-  void addInterface(WifiInterface * i);
+  void addInterface(std::shared_ptr<WifiInterface> &i);
 
-  WifiInterface * getRightInterface();
-  WifiInterface * getDownInterface();
+  std::shared_ptr<WifiInterface> getRightInterface();
+  std::shared_ptr<WifiInterface> getDownInterface();
 };
 
 #endif

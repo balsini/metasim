@@ -79,25 +79,25 @@ int main()
 
   for (int c=1; c<COLUMNS-1; ++c) {
     //std::cout << "Generated node [" << ROWS-1 << " , " << c << "]" << std::endl;
-    Node * n = experiment.addNode(std::make_pair(ROWS-1, c),
-                                  1.1);
+    auto n = experiment.addNode(std::make_pair(ROWS-1, c),
+                                1.1);
 
     //std::cout << "Generated source [" << 0 << " , " << c << "]" << std::endl;
-    Source * s = experiment.addNode(std::make_pair(0, c),
-                                    1.1,
-                                    at);
+    auto s = experiment.addNode(std::make_pair(0, c),
+                                1.1,
+                                at);
     s->addDest(n);
   }
   for (int r=1; r<ROWS-1; ++r) {
 
     //std::cout << "Generated node [" << r << " , " << COLUMNS-1 << "]" << std::endl;
-    Node * n = experiment.addNode(std::make_pair(r, COLUMNS-1),
-                                  1.1);
+    auto n = experiment.addNode(std::make_pair(r, COLUMNS-1),
+                                1.1);
 
     //std::cout << "Generated source [" << r << " , " << 0 << "]" << std::endl;
-    Source * s = experiment.addNode(std::make_pair(r, 0),
-                                    1.1,
-                                    at);
+    auto s = experiment.addNode(std::make_pair(r, 0),
+                                1.1,
+                                at);
     s->addDest(n);
   }
 
@@ -114,23 +114,23 @@ int main()
    ************/
 
   //std::cout << "Generated node [" << ROWS-1 << " , " << COLUMNS-1 << "]" << std::endl;
-  Node * nbr = experiment.addNode(std::make_pair(ROWS-1, COLUMNS-1),
-                                  1.1);
+  auto nbr = experiment.addNode(std::make_pair(ROWS-1, COLUMNS-1),
+                                1.1);
 
   //std::cout << "Generated source [" << 0 << " , " << COLUMNS-1 << "]" << std::endl;
-  Source * str = experiment.addNode(std::make_pair(0, COLUMNS-1),
-                                    1.1,
-                                    at);
+  auto str = experiment.addNode(std::make_pair(0, COLUMNS-1),
+                                1.1,
+                                at);
 
   //std::cout << "Generated source [" << ROWS-1 << " , " << 0 << "]" << std::endl;
-  Source * sbl = experiment.addNode(std::make_pair(ROWS-1, 0),
-                                    1.1,
-                                    at);
+  auto sbl = experiment.addNode(std::make_pair(ROWS-1, 0),
+                                1.1,
+                                at);
 
   //std::cout << "Generated source [" << 0 << " , " << 0 << "]" << std::endl;
-  Source * stl = experiment.addNode(std::make_pair(0, 0),
-                                    1.1,
-                                    at);
+  auto stl = experiment.addNode(std::make_pair(0, 0),
+                                1.1,
+                                at);
   str->addDest(nbr);
   sbl->addDest(nbr);
   stl->addDest(str);

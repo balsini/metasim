@@ -20,7 +20,8 @@ void Experiment::generateLinks()
         if (d < n->netInterface()->radius()) {
           //std::cout << "\t" << other->getName() << " -- distance: " << d << std::endl;
           //std::cout << "\t\tIN RANGE" << std::endl;
-          n->netInterface()->link()->addInterface(other->netInterface());
+          std::shared_ptr<WifiInterface> interf(other->netInterface());
+          n->netInterface()->link()->addInterface(interf);
         }
       }
     }
@@ -29,7 +30,7 @@ void Experiment::generateLinks()
   std::cout << "DONE" << std::endl;
 }
 
-Node * Experiment::createNode(std::pair <int,int> p, double radius, unsigned int nodeId, const std::string &name)
+std::shared_ptr<Node> Experiment::createNode(std::pair <int,int> p, double radius, unsigned int nodeId, const std::string &name)
 {
   ///////////////////////////
   // Node Creation
@@ -39,17 +40,17 @@ Node * Experiment::createNode(std::pair <int,int> p, double radius, unsigned int
   //std::cout << "\tPosition:\t[ " << p.first << " , " << p.second << " ]" << std::endl;
   //std::cout << "\tRadius:\t\t" << radius << std::endl;
 
-  Node * n = new Node(name, p);
+  auto n = std::make_shared<Node>(name, p);
   _nodes.push_back(n);
 
   return n;
 }
 
-Source * Experiment::createNode(std::pair <int,int> p,
-                              double radius,
-                              unsigned int nodeId,
-                              const std::string &name,
-                              const std::shared_ptr<RandomVar> &a)
+std::shared_ptr<Source> Experiment::createNode(std::pair <int,int> p,
+                                               double radius,
+                                               unsigned int nodeId,
+                                               const std::string &name,
+                                               const std::shared_ptr<RandomVar> &a)
 {
   ///////////////////////////
   // Node Creation
@@ -59,13 +60,15 @@ Source * Experiment::createNode(std::pair <int,int> p,
   //std::cout << "\tPosition:\t[ " << p.first << " , " << p.second << " ]" << std::endl;
   //std::cout << "\tRadius:\t\t" << radius << std::endl;
 
-  Source * n = new Source(name, p, a);
+  auto n = std::make_shared<Source>(name, p, a);
   _nodes.push_back(n);
 
   return n;
 }
 
-WifiInterface * Experiment::createInterface(Node * n, const std::string &name, double radius)
+std::shared_ptr<WifiInterface> Experiment::createInterface(std::shared_ptr<Node> &n,
+                                                           const std::string &name,
+                                                           double radius)
 {
   ///////////////////////////
   // Node Interface creation
@@ -76,14 +79,14 @@ WifiInterface * Experiment::createInterface(Node * n, const std::string &name, d
 
   //std::cout << "Creating Interface: " << interfaceName << std::endl;
 
-  WifiInterface * n_int = new WifiInterface(interfaceName, radius, n);
+  auto n_int = std::make_shared<WifiInterface>(interfaceName, radius, n);
 
   n->netInterface(n_int);
 
   return n_int;
 }
 
-void Experiment::createLink(const std::string &name, WifiInterface * n_int)
+void Experiment::createLink(const std::string &name, std::shared_ptr<WifiInterface> &n_int)
 {
   ///////////////////////////
   // Node Link creation
@@ -94,12 +97,11 @@ void Experiment::createLink(const std::string &name, WifiInterface * n_int)
 
   //std::cout << "Creating Link: " << linkName << std::endl;
 
-  WifiLink * n_l = new WifiLink(linkName);
+  auto n_l = std::make_shared<WifiLink>(linkName);
   n_int->link(n_l);
 }
 
-
-Node * Experiment::addNode(std::pair <int,int> p, double radius)
+std::shared_ptr<Node> Experiment::addNode(std::pair <int,int> p, double radius)
 {
   std::string name = "Node_";
 
@@ -110,14 +112,14 @@ Node * Experiment::addNode(std::pair <int,int> p, double radius)
               std::to_string(std::get<1>(p)) +
               "]");
 
-  Node * n = createNode(p, radius, nodeId, name);
-  WifiInterface * n_int = createInterface(n, name, radius);
+  auto n = createNode(p, radius, nodeId, name);
+  auto n_int = createInterface(n, name, radius);
   createLink(name, n_int);
 
   return n;
 }
 
-Source * Experiment::addNode(std::pair <int,int> p, double radius, const std::shared_ptr<RandomVar> &a)
+std::shared_ptr<Source> Experiment::addNode(std::pair <int,int> p, double radius, const std::shared_ptr<RandomVar> &a)
 {
   std::string name = "Node_";
 
@@ -128,8 +130,9 @@ Source * Experiment::addNode(std::pair <int,int> p, double radius, const std::sh
               std::to_string(std::get<1>(p)) +
               "]");
 
-  Source * n = createNode(p, radius, nodeId, name, a);
-  WifiInterface * n_int = createInterface(n, name, radius);
+  auto n = createNode(p, radius, nodeId, name, a);
+  auto nn = static_pointer_cast<Node>(n);
+  auto n_int = createInterface(nn, name, radius);
   createLink(name, n_int);
 
   return n;
