@@ -65,7 +65,8 @@ public:
  *   --- the timer is decremented every time the channel is
  *         found idle;
  *   --- when the timer triggers, the frame is sent;
- *   --- if no ACK is received, the backoff time is incremented.
+ *   --- if no ACK is received within ACK_timeout, the backoff time
+ *         is incremented.
  * The receiver:
  *   If the frame has been received, an ACK is sent after SIFS time.
  *   This ACK is used to solve the hidden terminal problem.
@@ -75,10 +76,12 @@ public:
  * with c_wMin and, if no ACK is received, the interval is updated
  * as c_w = min[2*c_w, c_wMax].
  *
- * DIFS = SIFS + (2 * Slot time)
+ * DIFS = SIFS + (2 * SlotTime)
  *
  * In this case, will be taken as example the IEEE 802.11n protocol,
- * with DIFS = 28 and SIFS = 10.
+ * with DIFS = 28, SIFS = 10 and SlotTime = 9.
+ *
+ * ACK_timeout = SIFS + ACKTransmissionDuration + SlotTime
  */
 class WifiInterface : public NetInterface
 {
@@ -94,14 +97,16 @@ protected:
   std::deque<std::unique_ptr<Message>> _out_queue;
   std::deque<std::unique_ptr<Message>> _ack_queue;
 
+  const int _ACKTransmissionDuration = 10;
+
   const int _c_wMin = 1;
   const int _c_wMax = 50000;
-  const int _DIFS = 28;
+
+  const int _SlotTime = 9;
   const int _SIFS = 10;
-  /**
-   * Time for which the acknowledgement is awaited
-   */
-  int _ACK_time = 300;
+  const int _DIFS = _SIFS + (2 * _SlotTime);
+
+  const int _ACK_timeout = _SIFS + _ACKTransmissionDuration + _SlotTime;
 
   bool _collision_detected;
   int _backoff_timer;

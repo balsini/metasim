@@ -101,7 +101,7 @@ void WifiInterface::onEndTrans(MetaSim::Event * e)
 
   status(WAITING_FOR_ACK);
   //_wait_for_ACK_evt.drop();
-  _wait_for_ACK_evt.post(SIMUL.getTime() + Tick(_ACK_time));
+  _wait_for_ACK_evt.post(SIMUL.getTime() + Tick(_ACK_timeout));
 }
 
 void WifiInterface::onEndACKTrans(MetaSim::Event * e)
