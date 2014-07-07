@@ -48,7 +48,7 @@
  *
  * Revision 1.2  2003/04/24 14:55:54  lipari
  * *** empty log message ***
- * 
+ *
  */
 #ifndef __TRACE_HPP__
 #define __TRACE_HPP__
@@ -69,9 +69,9 @@ namespace MetaSim {
      \ingroup metasim_stat
 
      This is just the basic interface for the tracing classes. By
-     default, it opens a binary stream. 
+     default, it opens a binary stream.
   */
-  class Trace { 
+  class Trace {
   protected:
     std::string _filename;
     std::ofstream _os;
@@ -79,21 +79,21 @@ namespace MetaSim {
   public:
 
     enum Type {BINARY = 0,
-	       ASCII = 1};
+         ASCII = 1};
 
     /**
        \ingroup metasim_exc
-       
+
        Exceptions for the Trace classes.
      */
     class Exc : public BaseExc {
     public:
       static const char * const _NO_OPEN;
       Exc(const std::string msg = _NO_OPEN,
-	  const std::string c = "Trace", 
-	  const std::string mod = "trace.hpp") : BaseExc(msg, c, mod) {} ;
+    const std::string c = "Trace",
+    const std::string mod = "trace.hpp") : BaseExc(msg, c, mod) {} ;
     };
-  
+
     /**
        Constructor for the trace class. It opens a stream of name
        "filename" of type. Type can be binary or ascii (only for DOS
@@ -109,12 +109,12 @@ namespace MetaSim {
 
       DEPRECATED!
 
-      @todo remove this function and substitute the current tracing 
+      @todo remove this function and substitute the current tracing
       with the particle mechanism
      */
     virtual void record(Event*) {};
 
-    /// Open the file! 
+    /// Open the file!
     virtual void open(bool type = BINARY);
 
     /// Closes the file!
@@ -132,7 +132,7 @@ namespace MetaSim {
   */
   class TraceAscii : public Trace {
   public:
-    TraceAscii(char* file) : Trace(file, ASCII){}
+    TraceAscii(const char * file) : Trace(file, ASCII){}
 
     /// Records the value on the file, one value per line.
     //@{
@@ -142,9 +142,9 @@ namespace MetaSim {
     void record(char* str){_os << str;}
 
     /// DEPRECATED substitute with the particle mechanism
-    virtual void record(Event*) {}; //Inherited from Trace 
+    virtual void record(Event*) {}; //Inherited from Trace
     //@}
-  };    
+  };
 
 } // namespace MetaSim
 
