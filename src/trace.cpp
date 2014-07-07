@@ -36,12 +36,12 @@
  * Anyway, the default behaviour remains to open binary streams.
  *
  * Revision 1.3  2003/09/12 09:47:55  scordino
- * Initialization of classes' static variables moved from file .hpp 
+ * Initialization of classes' static variables moved from file .hpp
  * to file .cpp.
  *
  * Revision 1.2  2003/04/24 14:56:14  lipari
  * *** empty log message ***
- * 
+ *
  */
 #include <event.hpp>
 #include <trace.hpp>
@@ -52,27 +52,27 @@ namespace MetaSim {
 
   const char * const Trace::Exc::_NO_OPEN = "File is not open";
 
-  Trace::Trace(const char *filename, Type type, bool tof) 
+  Trace::Trace(const char *filename, Type type, bool tof)
     :_filename(filename), toFile(tof)
   {
     if (tof == false) return;
-    if (type == _ASCII_TRACE) 
-      _os.open(_filename.c_str(), ios::out);
-    else
-      _os.open(_filename.c_str(), ios::binary | ios::out);
-  } 
-
-  Trace::Trace(string filename, Type type, bool tof)
-    : _filename(filename)
-  {
-    if (tof == false) return;
-    if (type == _ASCII_TRACE) 
+    if (type == _ASCII_TRACE)
       _os.open(_filename.c_str(), ios::out);
     else
       _os.open(_filename.c_str(), ios::binary | ios::out);
   }
 
-  Trace::~Trace() 
+  Trace::Trace(string filename, Type type, bool tof)
+    : _filename(filename)
+  {
+    if (tof == false) return;
+    if (type == _ASCII_TRACE)
+      _os.open(_filename.c_str(), ios::out);
+    else
+      _os.open(_filename.c_str(), ios::binary | ios::out);
+  }
+
+  Trace::~Trace()
   {
     if (_os.is_open()) close();
   }
@@ -80,7 +80,7 @@ namespace MetaSim {
   void Trace::open(bool type)
   {
     _os.close();
-    if (type == _ASCII_TRACE) 
+    if (type == _ASCII_TRACE)
       _os.open(_filename.c_str(), ios::out);
     else
       _os.open(_filename.c_str(), ios::binary | ios::out);
@@ -92,4 +92,4 @@ namespace MetaSim {
     _os.close();
   }
 
-} // namespace MetaSim  
+} // namespace MetaSim

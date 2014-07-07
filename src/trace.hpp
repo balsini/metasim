@@ -79,7 +79,7 @@ namespace MetaSim {
   public:
 
     enum Type {BINARY = 0,
-         ASCII = 1};
+               ASCII = 1};
 
     /**
        \ingroup metasim_exc
@@ -90,8 +90,8 @@ namespace MetaSim {
     public:
       static const char * const _NO_OPEN;
       Exc(const std::string msg = _NO_OPEN,
-    const std::string c = "Trace",
-    const std::string mod = "trace.hpp") : BaseExc(msg, c, mod) {} ;
+          const std::string c = "Trace",
+          const std::string mod = "trace.hpp") : BaseExc(msg, c, mod) {} ;
     };
 
     /**
@@ -139,7 +139,7 @@ namespace MetaSim {
     void record(double value) { _os << value << std::endl; }
     void record(long double value){_os << value << std::endl;}
     void record(int value){_os << value << std::endl;}
-    void record(char* str){_os << str;}
+    void record(const char * str){_os << str;}
 
     /// DEPRECATED substitute with the particle mechanism
     virtual void record(Event*) {}; //Inherited from Trace
