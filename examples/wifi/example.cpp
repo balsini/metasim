@@ -9,8 +9,8 @@
 
 using namespace MetaSim;
 
-const int ROWS = 100;
-const int COLUMNS = 100;
+const int ROWS = 5;
+const int COLUMNS = 5;
 
 const double UMIN = 0.5;
 const double UMAX = 0.9;

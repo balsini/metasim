@@ -49,10 +49,10 @@ public:
 
   virtual void send(std::unique_ptr<Message> & m);
 
-  void addInterface(std::shared_ptr<WifiInterface> &i);
+  void addInterface(const std::shared_ptr<WifiInterface> & i);
 
-  std::shared_ptr<WifiInterface> getRightInterface();
-  std::shared_ptr<WifiInterface> getDownInterface();
+  const std::shared_ptr<WifiInterface> getRightInterface();
+  const std::shared_ptr<WifiInterface> getDownInterface();
 };
 
 #endif

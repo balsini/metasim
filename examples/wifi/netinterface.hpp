@@ -6,6 +6,7 @@
 #include <string>
 
 #include <metasim.hpp>
+#include <trace.hpp>
 
 #include "message.hpp"
 #include "link.hpp"
@@ -21,7 +22,9 @@ enum WifiInterfaceStatus {
   WAITING_FOR_DIFS,
   WAITING_FOR_SIFS,
   WAITING_FOR_BACKOFF,
+  WAITING_FOR_ACK,
   SENDING_MESSAGE,
+  SENDING_ACK,
   RECEIVING_MESSAGE
 };
 
@@ -31,12 +34,12 @@ protected:
   std::shared_ptr<Node> _node;
 
 public:
-  NetInterface(const std::string &name, std::shared_ptr<Node> & n);
+  NetInterface(const std::string &name, const std::shared_ptr<Node> &n);
   virtual ~NetInterface();
 
-  virtual std::shared_ptr<Node> node() = 0;
+  virtual const std::shared_ptr<Node> node() = 0;
   virtual void send(std::unique_ptr<Message> &m) = 0;
-  virtual void receive(std::shared_ptr<Message> &n) = 0;
+  virtual void receive(const std::shared_ptr<Message> &n) = 0;
 };
 
 /**
@@ -98,7 +101,7 @@ protected:
   /**
    * Time for which the acknowledgement is awaited
    */
-  int _ACK_time = 100;
+  int _ACK_time = 300;
 
   bool _collision_detected;
   int _backoff_timer;
@@ -106,11 +109,16 @@ protected:
 
   std::shared_ptr<Message> _incoming_message;
   std::shared_ptr<WifiLink> _link;
+
   double _radius;
 
   WifiInterfaceStatus _status;
 
   int _corrupted_messages;
+
+  std::shared_ptr<MetaSim::TraceAscii> _wifiTrace;
+
+  void status(WifiInterfaceStatus s);
 public:
   /**
    * A new message is willing to be sent, so DIFS has to be waited
@@ -146,14 +154,14 @@ public:
    */
   MetaSim::GEvent<WifiInterface> _wait_for_ACK_evt;
 
-  WifiInterface(const std::string &name, double radius, std::shared_ptr<Node> &n);
+  WifiInterface(const std::string &name, double radius, const std::shared_ptr<Node> &n);
   virtual ~WifiInterface();
 
-  void link(std::shared_ptr<WifiLink> l);
-  std::shared_ptr<WifiLink> link();
+  void link(const std::shared_ptr<WifiLink> l);
+  const std::shared_ptr<WifiLink> link();
 
   double radius() { return _radius; }
-  std::shared_ptr<Node> node() { return _node; }
+  const std::shared_ptr<Node> node() { return _node; }
 
   virtual void onStartTrans(MetaSim::Event * e);
   virtual void onDIFSElapsed(MetaSim::Event * e);
@@ -161,7 +169,7 @@ public:
   virtual void onEndTrans(MetaSim::Event * e);
   virtual void onEndACKTrans(MetaSim::Event * e);
 
-  std::shared_ptr<WifiInterface> routingProtocol(Node * n);
+  const std::shared_ptr<WifiInterface> routingProtocol(Node * n);
   /**
    * Node calls this function, requesting the interface
    * to send the message.
@@ -173,7 +181,7 @@ public:
    * sent from the link to the interface.
    * @param m received message
    */
-  virtual void receive(std::shared_ptr<Message> &m);
+  virtual void receive(const std::shared_ptr<Message> & m);
   /**
    * This function is called when the transmission is completed.
    * Collisions are checked here.
@@ -185,8 +193,12 @@ public:
   void onBackoffTimeElapsed(MetaSim::Event * e);
 
   void trySend();
-  void printStatus();
+  std::string status2string(WifiInterfaceStatus s);
 
+  void addTrace(const std::shared_ptr<MetaSim::TraceAscii> &t)
+  {
+    _wifiTrace = t;
+  }
   WifiInterfaceStatus status();
 
   void newRun();

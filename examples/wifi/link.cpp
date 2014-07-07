@@ -30,14 +30,14 @@ void WifiLink::send(std::unique_ptr<Message> &m)
   }
 }
 
-void WifiLink::addInterface(std::shared_ptr<WifiInterface> &i)
+void WifiLink::addInterface(const std::shared_ptr<WifiInterface> &i)
 {
   //std::cout << "Link: added interface" << std::endl;
 
   _interfaces.push_back(i);
 }
 
-std::shared_ptr<WifiInterface> WifiLink::getRightInterface()
+const std::shared_ptr<WifiInterface> WifiLink::getRightInterface()
 {
   if (_interfaces.size() == 0)
     throw LinkException("Link is empty");
@@ -56,7 +56,7 @@ std::shared_ptr<WifiInterface> WifiLink::getRightInterface()
   return i;
 }
 
-std::shared_ptr<WifiInterface> WifiLink::getDownInterface() {
+const std::shared_ptr<WifiInterface> WifiLink::getDownInterface() {
   if (_interfaces.size() == 0)
     throw LinkException("Link is empty");
 

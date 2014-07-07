@@ -14,7 +14,7 @@ using namespace MetaSim;
 
 TEST_CASE( "Node Test", "[node]" )
 {
-  auto at = std::make_shared<UniformVar>(50,1024);
+  auto at = std::make_shared<DeltaVar>(1);
 
   auto s = std::make_shared<Source>(std::string("src1"), std::make_pair(0, 0), at);
   auto ss = static_pointer_cast<Node>(s);
@@ -42,7 +42,6 @@ TEST_CASE( "Node Test", "[node]" )
   s->addDest(d);
 
   // Checks if message is correctly consumed
-  REQUIRE( d->consumed() == 0 );
 
   auto msg = std::unique_ptr<Message>(new Message(10,
                                                   s.get(),
@@ -50,9 +49,12 @@ TEST_CASE( "Node Test", "[node]" )
                                                   0,
                                                   false));
 
-  d->put(msg);
+  REQUIRE( d->consumed() == 0 );
 
-  REQUIRE( d->consumed() == 1 );
+  for (unsigned int i=0; i<128; ++i)
+    d->put(msg);
+
+  REQUIRE( d->consumed() == 128 );
 
   SECTION( "Node produces the exact number of messages" )
   {
@@ -66,12 +68,17 @@ TEST_CASE( "Node Test", "[node]" )
 
     REQUIRE( s->produced() == 1 );
 
+    SIMUL.sim_step();
+
+    REQUIRE( s->produced() == 2 );
+
     // Exactly 100 messages must be produced
 
     while ( s->produced() < 100)
       SIMUL.sim_step();
 
-    SIMUL.run(500000);
+    for (unsigned int i=0; i<5000; ++i)
+      SIMUL.sim_step();
 
     REQUIRE( s->produced() == 100 );
 

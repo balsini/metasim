@@ -2,6 +2,8 @@
 
 #include <metasim.hpp>
 
+#include <sstream>
+
 #include "link.hpp"
 #include "message.hpp"
 #include "netinterface.hpp"
@@ -9,7 +11,7 @@
 
 using namespace MetaSim;
 
-NetInterface::NetInterface(const std::string &name, std::shared_ptr<Node> &n) :
+NetInterface::NetInterface(const std::string &name, const std::shared_ptr<Node> &n) :
   Entity(name), _node(n)
 {}
 
@@ -17,7 +19,7 @@ NetInterface::~NetInterface()
 {
 }
 
-WifiInterface::WifiInterface(const std::string &name, double radius, std::shared_ptr<Node> & n) :
+WifiInterface::WifiInterface(const std::string &name, double radius, const std::shared_ptr<Node> &n) :
   NetInterface(name, n),
   _collision_detected(false),
   _status(IDLE),
@@ -38,6 +40,7 @@ WifiInterface::WifiInterface(const std::string &name, double radius, std::shared
   register_handler(_wait_for_ACK_evt, this, &WifiInterface::onACKTimeElapsed);
   register_handler(_wait_for_backoff_evt, this, &WifiInterface::onBackoffTimeElapsed);
 
+  _wifiTrace.reset();
   _radius = radius;
   _c_w = _c_wMin;
 }
@@ -47,7 +50,7 @@ WifiInterface::~WifiInterface()
 
 void WifiInterface::newRun()
 {
-  _status = IDLE;
+  status(IDLE);
   _c_w = _c_wMin;
   _ack_queue.clear();
   _out_queue.clear();
@@ -55,12 +58,12 @@ void WifiInterface::newRun()
   _corrupted_messages = 0;
 }
 
-void WifiInterface::link(std::shared_ptr<WifiLink> l)
+void WifiInterface::link(const std::shared_ptr<WifiLink> l)
 {
   _link = l;
 }
 
-std::shared_ptr<WifiLink> WifiInterface::link()
+const std::shared_ptr<WifiLink> WifiInterface::link()
 {
   return _link;
 }
@@ -68,7 +71,7 @@ std::shared_ptr<WifiLink> WifiInterface::link()
 void WifiInterface::endRun()
 {}
 
-std::shared_ptr<WifiInterface> WifiInterface::routingProtocol(Node * n)
+const std::shared_ptr<WifiInterface> WifiInterface::routingProtocol(Node * n)
 {
   //std::cout << "routingProtocol" << std::endl;
   double myPosR = std::get<0>(_node->position()),
@@ -96,8 +99,8 @@ void WifiInterface::onEndTrans(MetaSim::Event * e)
 {
   //std::cout << this->getName() << ": Transmission completed" << std::endl;
 
-  _status = IDLE;
-  _wait_for_ACK_evt.drop();
+  status(WAITING_FOR_ACK);
+  //_wait_for_ACK_evt.drop();
   _wait_for_ACK_evt.post(SIMUL.getTime() + Tick(_ACK_time));
 }
 
@@ -105,7 +108,7 @@ void WifiInterface::onEndACKTrans(MetaSim::Event * e)
 {
   //std::cout << this->getName() << ": ACK Transmission completed" << std::endl;
 
-  _status = IDLE;
+  status(IDLE);
 }
 
 void WifiInterface::onBackoffTimeElapsed(MetaSim::Event * e)
@@ -113,11 +116,13 @@ void WifiInterface::onBackoffTimeElapsed(MetaSim::Event * e)
   //std::cout << this->getName() << ": Backoff Time Elapsed" << std::endl;
 
   //std::cout << _out_queue.size() << std::endl;
+
+  status(SENDING_MESSAGE);
+
   _end_trans_evt.drop();
   _end_trans_evt.post(SIMUL.getTime() + Tick(_out_queue.front()->transTime()));
 
   _link->send(_out_queue.front());
-  _status = SENDING_MESSAGE;
 }
 
 void WifiInterface::onACKTimeElapsed(MetaSim::Event * e)
@@ -126,7 +131,7 @@ void WifiInterface::onACKTimeElapsed(MetaSim::Event * e)
 
   incrementBackoff();
   // Retry to send the packet.
-  _status = WAITING_FOR_BACKOFF;
+  status(WAITING_FOR_BACKOFF);
   /*
   std::cout << SIMUL.getTime() << " : Initializes backoff timer to: "
             << SIMUL.getTime() + Tick(getBackoff()) << std::endl;
@@ -143,7 +148,7 @@ void WifiInterface::onDIFSElapsed(MetaSim::Event * e)
     std::cout << this->getName() << ": Collision detected, managing backoff!"
               << std::endl;
               */
-    _status = WAITING_FOR_BACKOFF;
+    status(WAITING_FOR_BACKOFF);
 
     // Initializes backoff timer
     _wait_for_backoff_evt.drop();
@@ -155,10 +160,12 @@ void WifiInterface::onDIFSElapsed(MetaSim::Event * e)
               << _out_queue.front()->destInterface()->getName() << std::endl;
               */
 
-    _end_trans_evt.drop();
+    //_end_trans_evt.drop();
+
+    status(SENDING_MESSAGE);
+
     _end_trans_evt.post(SIMUL.getTime() + Tick(_out_queue.front()->transTime()));
     _link->send(_out_queue.front());
-    _status = SENDING_MESSAGE;
   }
 }
 
@@ -169,6 +176,9 @@ void WifiInterface::onSIFSElapsed(MetaSim::Event * e)
             << _ack_queue.front()->destInterface()->getName() << std::endl;
 */
   //_end_ACKtrans_evt.drop();
+
+  status(SENDING_ACK);
+
   _end_ACKtrans_evt.post(SIMUL.getTime() + Tick(_ack_queue.front()->transTime()));
   _link->send(_ack_queue.front());
   _ack_queue.pop_front();
@@ -185,7 +195,7 @@ void WifiInterface::onMessageSent(MetaSim::Event * e)
 {
   DBGENTER(_ETHINTER_DBG);
 
-  _status = IDLE;
+  status(IDLE);
   trySend();
 }
 
@@ -221,27 +231,41 @@ void WifiInterface::onMessageReceived(Event * e)
   if (_collision_detected) {
     //std::cout << "\tCollision Detected, dropping" << std::endl;
     _collision_detected = false;
-    _status = IDLE;
+    status(IDLE);
   } else if (_incoming_message->destInterface() == this) {
-    // Frame is for me, ACK must be sent
+    // Frame is for me
 
     //std::cout << "\tCorrect Interface" << std::endl;
+    //std::cout << "\tWaiting for ACK" << std::endl;
     if (_incoming_message->isACK()) {
-      //std::cout << "\tACK received" << std::endl;
-      if (_incoming_message->id() == _out_queue.front()->id()) {
-        //std::cout << "\tACK is correct" << std::endl;
-        _wait_for_ACK_evt.drop();
-        _out_queue.pop_front();
+
+      if (status() == WAITING_FOR_ACK) {
+        //std::cout << "\tACK received" << std::endl;
+
+        if (_incoming_message->id() == _out_queue.front()->id()) {
+          //std::cout << "\tcorrect ACK received" << std::endl;
+
+          // ACK timer is disabled
+          _wait_for_ACK_evt.drop();
+
+          // Pending message can be destroyed (succesfully sent)
+          _out_queue.pop_front();
+
+          status(IDLE);
+        }
       }
-      _status = IDLE;
     } else {
-      //std::cout << "\tNormal Message" << std::endl;
+      // Frame is a normal message,
+      // ACK must be sent!
+
+      //std::cout << "\tNormal Message, send ACK after SIFS" << std::endl;
 
       auto m_ack_unique = std::unique_ptr<Message>(new Message(10,
                                                                _node.get(),
                                                                _incoming_message->destInterface()->node().get(),
                                                                _incoming_message->id(),
                                                                true));
+      m_ack_unique->transTime(5);
       m_ack_unique->destInterface(_incoming_message->sourceInterface());
       m_ack_unique->sourceInterface(this);
 
@@ -250,8 +274,8 @@ void WifiInterface::onMessageReceived(Event * e)
       // Check if it has to be forwarded
       if (_incoming_message->destNode() == _node.get()) {
         // Message is for my node
-        //_node->put(_incoming_message);
-        _status = IDLE;
+        auto message_unique = std::unique_ptr<Message>(new Message(*_incoming_message));
+        _node->put(message_unique);
       } else {
         // Message must be forwarded
         auto out_msg = std::unique_ptr<Message>(new Message(*_incoming_message));
@@ -260,19 +284,21 @@ void WifiInterface::onMessageReceived(Event * e)
     }
   } else {
     //std::cout << "\tWrong Interface, dropping" << std::endl;
-    _status = IDLE;
+    status(IDLE);
   }
 
-  //if (_status == IDLE)
+  //if (status() == IDLE)
   //  trySend();
 }
 
 void WifiInterface::sendACK(std::unique_ptr<Message> &m)
 {
   //std::cout << this->getName() << ": Awaiting for SIFS" << std::endl;
+
+  status(WAITING_FOR_SIFS);
+
   _ack_queue.push_back(std::move(m));
 
-  _status = WAITING_FOR_SIFS;
   _wait_for_SIFS_evt.post(SIMUL.getTime() + Tick(_SIFS));
 }
 
@@ -294,15 +320,16 @@ void WifiInterface::trySend()
 {
   //std::cout << "TrySend()" << std::endl;
 
-  if (_out_queue.size() > 0 && _status == IDLE) {
-    _status = WAITING_FOR_DIFS;
+  if (_out_queue.size() > 0
+      and status() == IDLE) {
+    status(WAITING_FOR_DIFS);
     _wait_for_DIFS_evt.post(SIMUL.getTime() + Tick(_DIFS));
   }
 
   //std::cout << "DONE" << std::endl;
 }
 
-void WifiInterface::receive(std::shared_ptr<Message> &m)
+void WifiInterface::receive(const std::shared_ptr<Message> &m)
 {
   DBGTAG(_ETHINTER_DBG, getName() + "::get()");
 
@@ -313,8 +340,7 @@ void WifiInterface::receive(std::shared_ptr<Message> &m)
 
   MetaSim::Tick b;
 
-  //printStatus();
-  switch(_status) {
+  switch(status()) {
     case RECEIVING_MESSAGE:
       // The previously transferring message is now corrupted, so:
       // A collision has been detected
@@ -337,7 +363,7 @@ void WifiInterface::receive(std::shared_ptr<Message> &m)
       _incoming_message = m;
       //_data_received_evt.drop();
       _data_received_evt.post(SIMUL.getTime() + m->transTime());
-      _status = RECEIVING_MESSAGE;
+      status(RECEIVING_MESSAGE);
       break;
     case WAITING_FOR_DIFS:
       _collision_detected = true;
@@ -365,29 +391,64 @@ WifiInterfaceStatus WifiInterface::status()
   return _status;
 }
 
-void WifiInterface::printStatus()
+void WifiInterface::status(WifiInterfaceStatus s)
 {
-  switch(_status) {
+  /*
+  std::cout << SIMUL.getTime()
+            << "\t: "
+            << this->node()->getName()
+            << "\t: "
+            << status2string(status())
+            << " -> "
+            << status2string(s)
+            << std::endl;
+            */
+
+  _status = s;
+
+  if (_wifiTrace) {
+    std::stringstream ss;
+    ss << SIMUL.getTime()
+       << "\t"
+       << getName()
+       << "\t"
+       << status2string(status())
+       << std::endl;
+
+    std::cout << ss.str();
+    _wifiTrace->record(ss.str().c_str());
+  }
+}
+
+std::string WifiInterface::status2string(WifiInterfaceStatus s)
+{
+  switch(s) {
     case IDLE:
-      std::cout << "IDLE" << std::endl;
+      return "IDLE";
       break;
     case WAITING_FOR_DIFS:
-      std::cout << "WAITING_FOR_DIFS" << std::endl;
+      return "WAITING_FOR_DIFS";
       break;
     case WAITING_FOR_SIFS:
-      std::cout << "WAITING_FOR_SIFS" << std::endl;
-      break;
-    case SENDING_MESSAGE:
-      std::cout << "SENDING_MESSAGE" << std::endl;
-      break;
-    case RECEIVING_MESSAGE:
-      std::cout << "RECEIVING_MESSAGE" << std::endl;
+      return "WAITING_FOR_SIFS";
       break;
     case WAITING_FOR_BACKOFF:
-      std::cout << "WAITING_FOR_BACKOFF" << std::endl;
+      return "WAITING_FOR_BACKOFF";
+      break;
+    case WAITING_FOR_ACK:
+      return "WAITING_FOR_ACK";
+      break;
+    case SENDING_MESSAGE:
+      return "SENDING_MESSAGE";
+      break;
+    case SENDING_ACK:
+      return "SENDING_ACK";
+      break;
+    case RECEIVING_MESSAGE:
+      return "RECEIVING_MESSAGE";
       break;
     default:
-      std::cout << "!!! Status: unknown !!!" << std::endl;
+      return "!!! Status: unknown !!!";
       break;
   }
 }

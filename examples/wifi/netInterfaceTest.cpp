@@ -2,10 +2,12 @@
 #include "catch.hpp"
 
 #include <memory>
+#include <vector>
 #include <string>
 
 #include <metasim.hpp>
 #include <simul.hpp>
+#include <trace.hpp>
 
 #include "link.hpp"
 #include "netinterface.hpp"
@@ -18,26 +20,35 @@ TEST_CASE( "netInterface Test, simple communication", "[netInterfaceCommunicatio
    * Network Organization:
    *
    *
-   * s <---> d
+   * S <---> D
    *
    *
    * Source sends messages to Node. Node receives the message and
    * consumes it.
    */
 
-  auto at = std::make_shared<UniformVar>(1, 1024);
+  auto interfacesTrace = std::make_shared<TraceAscii>("netInterfacesTrace.txt");
 
-  auto s = std::make_shared<Source>(std::string("src"),
-                                    std::make_pair(0.0, 0.0), at);
+  std::vector<double> times{1, 1000, 2000};
+
+  auto at = std::make_shared<DetVar>(times);
+
+  auto s = std::make_shared<Source>(std::string("S"),
+                                    std::make_pair(0.0, 0.0),
+                                    at,
+                                    1);
   auto ss = static_pointer_cast<Node>(s);
-  auto d = std::make_shared<Node>(std::string("dst"),
-                                    std::make_pair(0, 1));
+  auto d = std::make_shared<Node>(std::string("D"),
+                                  std::make_pair(0, 1));
 
-  auto s_int = std::make_shared<WifiInterface>("s_int", 1.1, ss);
-  auto d_int = std::make_shared<WifiInterface>("d_int", 1.1, d);
+  auto s_int = std::make_shared<WifiInterface>("S_int", 1.1, ss);
+  auto d_int = std::make_shared<WifiInterface>("D_int", 1.1, d);
 
-  auto s_lnk = std::make_shared<WifiLink>("s_lnk");
-  auto d_lnk = std::make_shared<WifiLink>("d_lnk");
+  s_int->addTrace(interfacesTrace);
+  d_int->addTrace(interfacesTrace);
+
+  auto s_lnk = std::make_shared<WifiLink>("S_lnk");
+  auto d_lnk = std::make_shared<WifiLink>("D_lnk");
 
   s_int->link(s_lnk);
   d_int->link(d_lnk);
@@ -67,8 +78,30 @@ TEST_CASE( "netInterface Test, simple communication", "[netInterfaceCommunicatio
     REQUIRE( s_int->status() == SENDING_MESSAGE );
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
+    SIMUL.sim_step();
+
+    REQUIRE( s_int->status() == WAITING_FOR_ACK );
+    // SHOULD BE SENDING_ACK
+    REQUIRE( d_int->status() == RECEIVING_MESSAGE );
+
+    SIMUL.sim_step();
+    SIMUL.sim_step();
+    SIMUL.sim_step();
+    SIMUL.sim_step();
+    SIMUL.sim_step();
+    SIMUL.sim_step();
+    SIMUL.sim_step();
+    SIMUL.sim_step();
+    SIMUL.sim_step();
+
+    //REQUIRE( s_int->status() == WAITING_FOR_ACK );
+    // SHOULD BE SENDING_ACK
+    //REQUIRE( d_int->status() == RECEIVING_MESSAGE );
+
     SIMUL.endSingleRun();
   }
+
+  interfacesTrace->close();
 }
 
 TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterfaceMAC]" )
@@ -87,7 +120,7 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
    * so they will try to avoid collisions.
    */
 
-/*
+  /*
   auto at = std::make_shared<UniformVar>(1,10);
 
   auto s = std::make_shared<Source>(std::string("src1"),
@@ -163,7 +196,7 @@ TEST_CASE( "netInterface Test, hidden terminal problem", "[netInterfaceHiddenTer
    * collision, the messages will be corrupted.
    */
 
-/*
+  /*
   auto at = std::make_shared<UniformVar>(1,10);
 
   auto s = std::make_shared<Source>(std::string("src1"),

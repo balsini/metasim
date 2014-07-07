@@ -30,7 +30,7 @@ void Experiment::generateLinks()
   std::cout << "DONE" << std::endl;
 }
 
-std::shared_ptr<Node> Experiment::createNode(std::pair <int,int> p, double radius, unsigned int nodeId, const std::string &name)
+const std::shared_ptr<Node> Experiment::createNode(std::pair <int,int> p, double radius, unsigned int nodeId, const std::string &name)
 {
   ///////////////////////////
   // Node Creation
@@ -46,11 +46,11 @@ std::shared_ptr<Node> Experiment::createNode(std::pair <int,int> p, double radiu
   return n;
 }
 
-std::shared_ptr<Source> Experiment::createNode(std::pair <int,int> p,
-                                               double radius,
-                                               unsigned int nodeId,
-                                               const std::string &name,
-                                               const std::shared_ptr<RandomVar> &a)
+const std::shared_ptr<Source> Experiment::createNode(std::pair <int,int> p,
+                                                     double radius,
+                                                     unsigned int nodeId,
+                                                     const std::string &name,
+                                                     const std::shared_ptr<RandomVar> &a)
 {
   ///////////////////////////
   // Node Creation
@@ -66,9 +66,9 @@ std::shared_ptr<Source> Experiment::createNode(std::pair <int,int> p,
   return n;
 }
 
-std::shared_ptr<WifiInterface> Experiment::createInterface(std::shared_ptr<Node> &n,
-                                                           const std::string &name,
-                                                           double radius)
+const std::shared_ptr<WifiInterface> Experiment::createInterface(const std::shared_ptr<Node> &n,
+                                                                 const std::string &name,
+                                                                 double radius)
 {
   ///////////////////////////
   // Node Interface creation
@@ -86,7 +86,7 @@ std::shared_ptr<WifiInterface> Experiment::createInterface(std::shared_ptr<Node>
   return n_int;
 }
 
-void Experiment::createLink(const std::string &name, std::shared_ptr<WifiInterface> &n_int)
+void Experiment::createLink(const std::string &name, const std::shared_ptr<WifiInterface> & n_int)
 {
   ///////////////////////////
   // Node Link creation
@@ -101,7 +101,7 @@ void Experiment::createLink(const std::string &name, std::shared_ptr<WifiInterfa
   n_int->link(n_l);
 }
 
-std::shared_ptr<Node> Experiment::addNode(std::pair <int,int> p, double radius)
+const std::shared_ptr<Node> Experiment::addNode(std::pair <int,int> p, double radius)
 {
   std::string name = "Node_";
 
@@ -119,7 +119,7 @@ std::shared_ptr<Node> Experiment::addNode(std::pair <int,int> p, double radius)
   return n;
 }
 
-std::shared_ptr<Source> Experiment::addNode(std::pair <int,int> p, double radius, const std::shared_ptr<RandomVar> &a)
+const std::shared_ptr<Source> Experiment::addNode(std::pair <int,int> p, double radius, const std::shared_ptr<RandomVar> &a)
 {
   std::string name = "Node_";
 
@@ -145,6 +145,7 @@ void Experiment::start(double UMIN,
                        Tick SIM_LEN)
 {
   generateLinks();
+
 
   //CollisionStat stat("coll.txt");
   //stat.attach(&link);

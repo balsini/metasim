@@ -27,9 +27,11 @@ int Node::consumed()
 
 Source::Source(const std::string &n,
                std::pair <double, double> position,
-               const std::shared_ptr<RandomVar> &a) :
+               const std::shared_ptr<RandomVar> &a,
+               int packetsToProduce) :
   Node(n, position),
   _produced(0),
+  _max_produced(packetsToProduce),
   _prodEvent(*this)
 {
   _at = a;
@@ -59,11 +61,13 @@ void Source::newRun()
 
 void Source::produce()
 {
-  if (_produced < 100) {
+  if (_produced < _max_produced) {
     if (_dest.size() == 0)
       throw NodeException("Node messages has no destination");
     if (_net_interf == nullptr)
       throw NodeException("Node has no Network Interface");
+
+    _produced++;
 
     UniformVar toRand(0, _dest.size());
     UniformVar idRand(0, 32767);
@@ -76,9 +80,8 @@ void Source::produce()
     m->transTime(Tick(msgLen));
 
     _net_interf->send(m);
-    _produced++;
-    _prodEvent.post(SIMUL.getTime() + Tick(_at->get()));
   }
+  _prodEvent.post(SIMUL.getTime() + Tick(_at->get()));
 }
 
 void Node::put(std::unique_ptr<Message> &m)

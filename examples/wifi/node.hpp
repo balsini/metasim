@@ -112,6 +112,7 @@ class Source : public Node
    * @brief _produced number of produced messages
    */
   int _produced;
+  int _max_produced;
 
   /**
    * @brief _dest destination nodes
@@ -142,7 +143,7 @@ public:
     {
       try {
         _n.produce();
-      } catch (exception& e) {
+      } catch (exception &e) {
         std::cout << e.what() << std::endl;
       }
     }
@@ -162,7 +163,8 @@ public:
    */
   Source(const std::string &n,
          std::pair <double, double> position,
-         const std::shared_ptr<RandomVar> &a);
+         const std::shared_ptr<RandomVar> &a,
+         int packetsToProduce = 100);
 
   /**
    * Adds a new destination node
@@ -171,8 +173,8 @@ public:
   void addDest(std::shared_ptr<Node> n);
 
   /**
-   * Produces a message and sends it to the
-   * network interface
+   * Produces a message and directly sends it
+   * to the network interface
    */
   void produce();
 

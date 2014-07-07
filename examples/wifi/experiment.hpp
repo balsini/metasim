@@ -22,18 +22,18 @@ class Experiment
    */
   void generateLinks();
 
-  std::shared_ptr<Node> createNode(std::pair <int,int> p,
-                                   double radius,
-                                   unsigned int nodeId,
-                                   const std::string &name);
-  std::shared_ptr<Source> createNode(std::pair <int,int> p,
-                                     double radius,
-                                     unsigned int nodeId,
-                                     const std::string &name,
-                                     const std::shared_ptr<RandomVar> &a);
-  std::shared_ptr<WifiInterface> createInterface(std::shared_ptr<Node> &n,
-                                                 const std::string &name, double radius);
-  void createLink(const std::string &name, std::shared_ptr<WifiInterface> &n_int);
+  const std::shared_ptr<Node> createNode(std::pair <int,int> p,
+                                         double radius,
+                                         unsigned int nodeId,
+                                         const std::string &name);
+  const std::shared_ptr<Source> createNode(std::pair <int,int> p,
+                                           double radius,
+                                           unsigned int nodeId,
+                                           const std::string &name,
+                                           const std::shared_ptr<RandomVar> &a);
+  const std::shared_ptr<WifiInterface> createInterface(const std::shared_ptr<Node> &n,
+                                                       const std::string &name, double radius);
+  void createLink(const std::string &name, const std::shared_ptr<WifiInterface> &n_int);
 
 public:
   Experiment();
@@ -44,7 +44,7 @@ public:
    * @param radius node radius
    * @return pointer to created object
    */
-  std::shared_ptr<Node> addNode(std::pair <int,int> p, double radius);
+  const std::shared_ptr<Node> addNode(std::pair <int,int> p, double radius);
 
   /**
    * Creates a source node, its interface and the link of the interface
@@ -53,7 +53,7 @@ public:
    * @param a message generation frequency
    * @return pointer to created object
    */
-  std::shared_ptr<Source> addNode(std::pair <int,int> p, double radius, const std::shared_ptr<RandomVar> &a);
+  const std::shared_ptr<Source> addNode(std::pair <int,int> p, double radius, const std::shared_ptr<RandomVar> &a);
 
   /**
    * Prepares all the data and starts the experiment
