@@ -80,8 +80,10 @@ void Source::produce()
     m->transTime(Tick(msgLen));
 
     _net_interf->send(m);
+
+    if (_produced < _max_produced)
+      _prodEvent.post(SIMUL.getTime() + Tick(_at->get()));
   }
-  _prodEvent.post(SIMUL.getTime() + Tick(_at->get()));
 }
 
 void Node::put(std::unique_ptr<Message> &m)

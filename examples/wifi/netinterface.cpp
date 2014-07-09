@@ -24,6 +24,7 @@ WifiInterface::WifiInterface(const std::string &name, double radius, const std::
   _collision_detected(false),
   _status(IDLE),
   _corrupted_messages(0),
+  _waitingForAck(false),
   _wait_for_DIFS_evt(),
   _wait_for_backoff_evt(),
   _data_received_evt(),
@@ -51,6 +52,7 @@ WifiInterface::~WifiInterface()
 void WifiInterface::newRun()
 {
   status(IDLE);
+  _waitingForAck = false;
   _c_w = _c_wMin;
   _ack_queue.clear();
   _out_queue.clear();
@@ -236,11 +238,12 @@ void WifiInterface::onMessageReceived(Event * e)
     // Frame is for me
 
     //std::cout << "\tCorrect Interface" << std::endl;
-    //std::cout << "\tWaiting for ACK" << std::endl;
     if (_incoming_message->isACK()) {
 
-      if (status() == WAITING_FOR_ACK) {
-        //std::cout << "\tACK received" << std::endl;
+      //std::cout << "\tACK received" << std::endl;
+
+      if (_waitingForAck ) {
+        //std::cout << "\tWaiting for ACK" << std::endl;
 
         if (_incoming_message->id() == _out_queue.front()->id()) {
           //std::cout << "\tcorrect ACK received" << std::endl;
@@ -248,10 +251,14 @@ void WifiInterface::onMessageReceived(Event * e)
           // ACK timer is disabled
           _wait_for_ACK_evt.drop();
 
+          // No more waiting for ACK
+          _waitingForAck = false;
           // Pending message can be destroyed (succesfully sent)
           _out_queue.pop_front();
 
           status(IDLE);
+        } else {
+          //std::cout << "\tWRONG ACK received" << std::endl;
         }
       }
     } else {
@@ -359,6 +366,8 @@ void WifiInterface::receive(const std::shared_ptr<Message> &m)
         _data_received_evt.post(SIMUL.getTime() + m->transTime());
       }
       break;
+    case WAITING_FOR_ACK:
+      _waitingForAck = true;
     case IDLE:
       _incoming_message = m;
       //_data_received_evt.drop();

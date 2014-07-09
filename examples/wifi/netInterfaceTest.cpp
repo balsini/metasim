@@ -81,22 +81,31 @@ TEST_CASE( "netInterface Test, simple communication", "[netInterfaceCommunicatio
     SIMUL.sim_step();
 
     REQUIRE( s_int->status() == WAITING_FOR_ACK );
-    // SHOULD BE SENDING_ACK
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
     SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
+
+    REQUIRE( s_int->status() == WAITING_FOR_ACK );
+    REQUIRE( d_int->status() == WAITING_FOR_SIFS );
+
     SIMUL.sim_step();
 
-    //REQUIRE( s_int->status() == WAITING_FOR_ACK );
-    // SHOULD BE SENDING_ACK
-    //REQUIRE( d_int->status() == RECEIVING_MESSAGE );
+    REQUIRE( s_int->status() == RECEIVING_MESSAGE );
+    REQUIRE( d_int->status() == SENDING_ACK );
+
+    SIMUL.sim_step();
+
+    REQUIRE( s_int->status() == RECEIVING_MESSAGE );
+    REQUIRE( d_int->status() == IDLE );
+
+    SIMUL.sim_step();
+
+    REQUIRE( s_int->status() == IDLE );
+    REQUIRE( d_int->status() == IDLE );
+
+    // No more events in queue
+
+    REQUIRE_THROWS( SIMUL.getNextEventTime() );
 
     SIMUL.endSingleRun();
   }

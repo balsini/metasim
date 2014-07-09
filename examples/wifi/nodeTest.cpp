@@ -77,8 +77,9 @@ TEST_CASE( "Node Test", "[node]" )
     while ( s->produced() < 100)
       SIMUL.sim_step();
 
-    for (unsigned int i=0; i<5000; ++i)
-      SIMUL.sim_step();
+    SIMUL.run_to(5000);
+
+    REQUIRE_THROWS( SIMUL.getNextEventTime() );
 
     REQUIRE( s->produced() == 100 );
 

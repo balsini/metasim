@@ -121,6 +121,8 @@ protected:
 
   int _corrupted_messages;
 
+  bool _waitingForAck;
+
   std::shared_ptr<MetaSim::TraceAscii> _wifiTrace;
 
   void status(WifiInterfaceStatus s);
