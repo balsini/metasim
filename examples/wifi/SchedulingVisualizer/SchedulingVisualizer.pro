@@ -18,3 +18,5 @@ SOURCES += main.cpp\
 HEADERS  += mainwindow.hpp
 
 FORMS    += mainwindow.ui
+
+QMAKE_CXXFLAGS += -std=c++0x

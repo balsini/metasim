@@ -110,7 +110,7 @@ void WifiInterface::onEndACKTrans(MetaSim::Event * e)
 {
   //std::cout << this->getName() << ": ACK Transmission completed" << std::endl;
 
-  status(IDLE);
+  trySend();
 }
 
 void WifiInterface::onBackoffTimeElapsed(MetaSim::Event * e)
@@ -146,15 +146,29 @@ void WifiInterface::onDIFSElapsed(MetaSim::Event * e)
 {
   //std::cout << "DIFS elapsed!" << std::endl;
   if (_collision_detected) {
-    /*
+
+    _collision_detected = false;
+/*
     std::cout << this->getName() << ": Collision detected, managing backoff!"
               << std::endl;
-              */
-    status(WAITING_FOR_BACKOFF);
-
+*/
     // Initializes backoff timer
-    _wait_for_backoff_evt.drop();
-    _wait_for_backoff_evt.post(SIMUL.getTime() + Tick(getBackoff()));
+
+    //std::cout << SIMUL.getTime() << ": Last _data_received_evt at: " << _data_received_evt.getTime() << std::endl;
+
+
+    // Checks if there is still an incoming message
+    if (_data_received_evt.isInQueue()) {
+/*
+      std::cout << this->getName() << ": Message transmission still pending!"
+                << std::endl;
+*/
+      _wait_for_backoff_evt.post(_data_received_evt.getTime() + Tick(getBackoff()));
+    } else {
+      _wait_for_backoff_evt.post(SIMUL.getTime() + Tick(getBackoff()));
+    }
+
+    status(WAITING_FOR_BACKOFF);
   } else {
     /*
     std::cout << this->getName()
@@ -197,7 +211,6 @@ void WifiInterface::onMessageSent(MetaSim::Event * e)
 {
   DBGENTER(_ETHINTER_DBG);
 
-  status(IDLE);
   trySend();
 }
 
@@ -224,16 +237,19 @@ void WifiInterface::onMessageReceived(Event * e)
 {
   DBGENTER(_ETHINTER_DBG);
 
+  if (status() == WAITING_FOR_BACKOFF) {
+    return;
+  }
   /*
   std::cout << this->getName() << ": Message received from "
             << _incoming_message->sourceInterface()->getName()
             << std::endl;
-            */
-
+*/
   if (_collision_detected) {
     //std::cout << "\tCollision Detected, dropping" << std::endl;
     _collision_detected = false;
-    status(IDLE);
+
+    trySend();
   } else if (_incoming_message->destInterface() == this) {
     // Frame is for me
 
@@ -256,11 +272,12 @@ void WifiInterface::onMessageReceived(Event * e)
           // Pending message can be destroyed (succesfully sent)
           _out_queue.pop_front();
 
-          status(IDLE);
         } else {
           //std::cout << "\tWRONG ACK received" << std::endl;
         }
       }
+
+      trySend();
     } else {
       // Frame is a normal message,
       // ACK must be sent!
@@ -285,17 +302,16 @@ void WifiInterface::onMessageReceived(Event * e)
         _node->put(message_unique);
       } else {
         // Message must be forwarded
+        //std::cout << "Forwarding..." << std::endl;
         auto out_msg = std::unique_ptr<Message>(new Message(*_incoming_message));
         send(out_msg);
       }
     }
   } else {
     //std::cout << "\tWrong Interface, dropping" << std::endl;
-    status(IDLE);
-  }
 
-  //if (status() == IDLE)
-  //  trySend();
+    trySend();
+  }
 }
 
 void WifiInterface::sendACK(std::unique_ptr<Message> &m)
@@ -320,17 +336,24 @@ void WifiInterface::send(std::unique_ptr<Message> &m)
 
   _out_queue.push_back(std::move(m));
 
-  trySend();
+  if (status() == IDLE)
+    trySend();
 }
 
 void WifiInterface::trySend()
 {
   //std::cout << "TrySend()" << std::endl;
 
-  if (_out_queue.size() > 0
-      and status() == IDLE) {
-    status(WAITING_FOR_DIFS);
-    _wait_for_DIFS_evt.post(SIMUL.getTime() + Tick(_DIFS));
+  if (_out_queue.size() > 0) {
+    if (status() != WAITING_FOR_DIFS) {
+      status(WAITING_FOR_DIFS);
+      //std::cout << "trySend(): posting event" << std::endl;
+      if (!_wait_for_DIFS_evt.isInQueue())
+        _wait_for_DIFS_evt.post(SIMUL.getTime() + Tick(_DIFS));
+      //std::cout << "DONE" << std::endl;
+    }
+  } else {
+    status(IDLE);
   }
 
   //std::cout << "DONE" << std::endl;
@@ -338,8 +361,6 @@ void WifiInterface::trySend()
 
 void WifiInterface::receive(const std::shared_ptr<Message> &m)
 {
-  DBGTAG(_ETHINTER_DBG, getName() + "::get()");
-
   /*
   std::cout << this->getName() << ": Incoming communication from "
             << m->sourceInterface()->getName() << std::endl;
@@ -376,20 +397,39 @@ void WifiInterface::receive(const std::shared_ptr<Message> &m)
       break;
     case WAITING_FOR_DIFS:
       _collision_detected = true;
-      break;
-    case WAITING_FOR_SIFS:
+
+      //std::cout << SIMUL.getTime() << ": incoming transmission while waiting for DIFS: " << std::endl;
+
+      // Checks for the longest incoming message
+      if (_data_received_evt.isInQueue()) {
+
+        //std::cout << SIMUL.getTime() << ": there was a transmission already: " << _data_received_evt.getTime() << std::endl;
+
+        //std::cout << SIMUL.getTime() << ": Last _data_received_evt at: " << _data_received_evt.getTime() << std::endl;
+        //std::cout << SIMUL.getTime() << ": Next _data_received_evt at: " << SIMUL.getTime() + m->transTime() << std::endl;
+
+        if (_data_received_evt.getTime() < SIMUL.getTime() + m->transTime()) {
+          _incoming_message = m;
+          _data_received_evt.drop();
+          _data_received_evt.post(SIMUL.getTime() + m->transTime());
+        }
+      } else {
+        _incoming_message = m;
+        _data_received_evt.post(SIMUL.getTime() + m->transTime());
+      }
       break;
     case WAITING_FOR_BACKOFF:
       // Timer is decremented only when channel is sensed idle
       b = _wait_for_backoff_evt.getTime();
-
-
-      //std::cout << SIMUL.getTime()
-      //          << " : Timer is decremented only when channel is sensed idle: "
-      //          << b << std::endl;
-
+      /*
+      std::cout << SIMUL.getTime()
+                << " : Timer is decremented only when channel is sensed idle: "
+                << b << std::endl;
+*/
       _wait_for_backoff_evt.drop();
       _wait_for_backoff_evt.post(b + m->transTime());
+      break;
+    case WAITING_FOR_SIFS:
       break;
     default: break;
   }

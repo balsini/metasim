@@ -99,8 +99,8 @@ protected:
 
   const int _ACKTransmissionDuration = 10;
 
-  const int _c_wMin = 1;
-  const int _c_wMax = 50000;
+  const int _c_wMin = 31;
+  const int _c_wMax = 1023;
 
   const int _SlotTime = 9;
   const int _SIFS = 10;

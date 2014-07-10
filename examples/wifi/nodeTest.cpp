@@ -14,6 +14,9 @@ using namespace MetaSim;
 
 TEST_CASE( "Node Test", "[node]" )
 {
+
+  auto interfacesTrace = std::make_shared<TraceAscii>("netInterfacesTraceNode.txt");
+
   auto at = std::make_shared<DeltaVar>(1);
 
   auto s = std::make_shared<Source>(std::string("src1"), std::make_pair(0, 0), at);
@@ -22,6 +25,9 @@ TEST_CASE( "Node Test", "[node]" )
 
   auto s_int = std::make_shared<WifiInterface>("s_int", 1.1, ss);
   auto d_int = std::make_shared<WifiInterface>("d_int", 1.1, d);
+
+  s_int->addTrace(interfacesTrace);
+  d_int->addTrace(interfacesTrace);
 
   auto s_lnk = std::make_shared<WifiLink>("s_lnk");
   auto d_lnk = std::make_shared<WifiLink>("d_lnk");
@@ -77,7 +83,11 @@ TEST_CASE( "Node Test", "[node]" )
     while ( s->produced() < 100)
       SIMUL.sim_step();
 
-    SIMUL.run_to(5000);
+    REQUIRE( s->produced() == 100 );
+
+    SIMUL.run_to(500000);
+
+    REQUIRE( s->produced() == 100 );
 
     REQUIRE_THROWS( SIMUL.getNextEventTime() );
 
@@ -85,4 +95,6 @@ TEST_CASE( "Node Test", "[node]" )
 
     SIMUL.endSingleRun();
   }
+
+  interfacesTrace->close();
 }
