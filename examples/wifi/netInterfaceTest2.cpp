@@ -109,7 +109,6 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == IDLE );
     REQUIRE( d_int->status() == IDLE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s1_int->status() == WAITING_FOR_DIFS );
@@ -117,7 +116,6 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == IDLE );
     REQUIRE( d_int->status() == IDLE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s1_int->status() == WAITING_FOR_DIFS );
@@ -125,7 +123,6 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == IDLE );
     REQUIRE( d_int->status() == IDLE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s1_int->status() == SENDING_MESSAGE );
@@ -133,7 +130,6 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == RECEIVING_MESSAGE);
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s1_int->status() == SENDING_MESSAGE );
@@ -141,7 +137,6 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == RECEIVING_MESSAGE);
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s1_int->status() == SENDING_MESSAGE );
@@ -149,7 +144,6 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == RECEIVING_MESSAGE);
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s1_int->status() == WAITING_FOR_ACK );
@@ -157,7 +151,6 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == RECEIVING_MESSAGE);
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s1_int->status() == WAITING_FOR_ACK );
@@ -165,10 +158,7 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == RECEIVING_MESSAGE);
     REQUIRE( d_int->status() == WAITING_FOR_SIFS );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
-
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s1_int->status() == WAITING_FOR_ACK );
@@ -176,7 +166,6 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == WAITING_FOR_DIFS);
     REQUIRE( d_int->status() == WAITING_FOR_SIFS );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s1_int->status() == RECEIVING_MESSAGE );
@@ -184,7 +173,6 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == WAITING_FOR_DIFS);
     REQUIRE( d_int->status() == SENDING_ACK );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s1_int->status() == RECEIVING_MESSAGE );
@@ -192,7 +180,6 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == WAITING_FOR_DIFS);
     REQUIRE( d_int->status() == IDLE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s1_int->status() == IDLE );
@@ -200,10 +187,7 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == WAITING_FOR_DIFS);
     REQUIRE( d_int->status() == IDLE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
-
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s1_int->status() == RECEIVING_MESSAGE );
@@ -211,7 +195,6 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == WAITING_FOR_DIFS);
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s1_int->status() == RECEIVING_MESSAGE );
@@ -219,7 +202,6 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == WAITING_FOR_BACKOFF);
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s1_int->status() == RECEIVING_MESSAGE );
@@ -227,7 +209,6 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == WAITING_FOR_BACKOFF);
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s1_int->status() == RECEIVING_MESSAGE );
@@ -235,7 +216,6 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == WAITING_FOR_BACKOFF);
     REQUIRE( d_int->status() == WAITING_FOR_SIFS );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s1_int->status() == IDLE );
@@ -243,7 +223,6 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == WAITING_FOR_BACKOFF);
     REQUIRE( d_int->status() == WAITING_FOR_SIFS );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     SIMUL.run_to(50000);
@@ -253,94 +232,10 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == IDLE );
     REQUIRE( d_int->status() == IDLE );
 
-    /*
-    REQUIRE( s1_int->status() == WAITING_FOR_ACK );
-    REQUIRE( s2_int->status() == WAITING_FOR_BACKOFF );
-    REQUIRE( s3_int->status() == RECEIVING_MESSAGE);
-    REQUIRE( d_int->status() == WAITING_FOR_SIFS );
-
-    std::cout << std::endl;
-    SIMUL.sim_step();
-
-    std::cout << std::endl;
-    SIMUL.sim_step();
-
-    REQUIRE( s1_int->status() == WAITING_FOR_ACK );
-    REQUIRE( s2_int->status() == WAITING_FOR_BACKOFF );
-    REQUIRE( s3_int->status() == WAITING_FOR_DIFS);
-    REQUIRE( d_int->status() == WAITING_FOR_SIFS );
-
-    std::cout << std::endl;
-    SIMUL.sim_step();
-*/
-
-    /*
-    REQUIRE( s1_int->status() == RECEIVING_MESSAGE );
-    REQUIRE( s2_int->status() == WAITING_FOR_BACKOFF );
-    REQUIRE( s3_int->status() == RECEIVING_MESSAGE);
-    REQUIRE( d_int->status() == SENDING_ACK );
-
-    std::cout << std::endl;
-    SIMUL.sim_step();
-*/
-    /*
-    REQUIRE( s1_int->status() == SENDING_MESSAGE );
-    REQUIRE( s2_int->status() == WAITING_FOR_DIFS );
-    REQUIRE( d_int->status() == RECEIVING_MESSAGE );
-
-    std::cout << std::endl;
-    SIMUL.sim_step();
-
-    REQUIRE( s1_int->status() == SENDING_MESSAGE );
-    REQUIRE( s2_int->status() == WAITING_FOR_BACKOFF );
-    REQUIRE( d_int->status() == RECEIVING_MESSAGE );
-
-    std::cout << "Finiti test" << std::endl;
-
-    SIMUL.run_to(3000);
-    */
-    /*
-    std::cout << std::endl;
-    SIMUL.sim_step();
-
-    std::cout << std::endl;
-    SIMUL.sim_step();
-
-    std::cout << std::endl;
-    SIMUL.sim_step();
-
-    std::cout << std::endl;
-    SIMUL.sim_step();
-
-    std::cout << std::endl;
-    SIMUL.sim_step();
-
-    std::cout << std::endl;
-    SIMUL.sim_step();
-
-    std::cout << std::endl;
-    SIMUL.sim_step();
-*/
-    /*
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-    SIMUL.sim_step();
-
     // No more events in queue
 
     REQUIRE_THROWS( SIMUL.getNextEventTime() );
-*/
+
     SIMUL.endSingleRun();
   }
 
