@@ -17,7 +17,7 @@ void Node::newRun()
 
 void Node::setInterval(const std::shared_ptr<RandomVar> &i)
 {
-  _at = i;
+  _period = i;
 }
 
 int Node::consumed()
@@ -74,7 +74,7 @@ void Source::produce()
     auto destinationNode = _dest.at(toRand.get());
 
     //std::cout << this->getName() << ": sending message to: " <<  destinationNode->getName() << std::endl;
-    int msgLen = 512;
+    int msgLen = 256;
 
     auto m = unique_ptr<Message>(new Message(msgLen, this, destinationNode.get(), idRand.get()));
     m->transTime(Tick(msgLen));
@@ -82,7 +82,7 @@ void Source::produce()
     _net_interf->send(m);
 
     if (_produced < _max_produced)
-      _prodEvent.post(SIMUL.getTime() + Tick(_at->get()));
+      _prodEvent.post(SIMUL.getTime() + Tick(_period->get()));
   }
 }
 

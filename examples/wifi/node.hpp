@@ -46,9 +46,14 @@ protected:
   std::pair <double, double> _position;
 
   /**
-   * @brief _at message production speed
+   * @brief _at message production phase
    */
   std::shared_ptr<RandomVar> _at;
+
+  /**
+   * @brief _period message production period
+   */
+  std::shared_ptr<RandomVar> _period;
 
   /**
    * Wifi MAC Interface

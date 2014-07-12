@@ -15,8 +15,12 @@ using namespace MetaSim;
 TEST_CASE( "Link Test", "[link]" )
 {
   auto at = std::make_shared<UniformVar>(50,1024);
+  auto period = std::make_shared<DeltaVar>(100);
 
   auto s = std::make_shared<Source>(std::string("src1"), std::make_pair(0.0, 0.0), at);
+
+  s->setInterval(period);
+
   auto ss = static_pointer_cast<Node>(s);
   auto d_1 = std::make_shared<Node>(std::string("dst1"), std::make_pair(0, 1));
   auto d_2 = std::make_shared<Node>(std::string("dst2"), std::make_pair(1, 0));

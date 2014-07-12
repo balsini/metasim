@@ -9,11 +9,11 @@
 
 using namespace MetaSim;
 
-const int ROWS = 5;
-const int COLUMNS = 5;
+const int ROWS = 10;
+const int COLUMNS = 10;
 
 const double UMIN = 0.5;
-const double UMAX = 0.9;
+const double UMAX = 0.5;
 const double USTEP = 0.1;
 
 const unsigned AVG_LEN = 800;
@@ -43,7 +43,7 @@ int main()
   std::cout << "\nCreating Nodes ..." << std::endl;
 
   //auto at = std::make_shared<ExponentialVar>(1000);
-  auto at = std::make_shared<UniformVar>(50,1024);
+  auto at = std::make_shared<UniformVar>(1,500);
 
   // First, generates the nodes inside the matrix
 

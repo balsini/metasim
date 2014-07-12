@@ -32,12 +32,16 @@ TEST_CASE( "netInterface Test, forwarding verification", "[netInterfaceForwardin
   std::vector<double> times{10};
 
   auto at = std::make_shared<DetVar>(times);
+  auto period = std::make_shared<DeltaVar>(100);
 
   auto s = std::make_shared<Source>(std::string("S"),
                                     std::make_pair(0.0, 0.0),
                                     at,
                                     1);
   auto ss = static_pointer_cast<Node>(s);
+
+  s->setInterval(period);
+
   auto n = std::make_shared<Node>(std::string("N"),
                                   std::make_pair(0, 1));
   auto d = std::make_shared<Node>(std::string("D"),
@@ -78,105 +82,90 @@ TEST_CASE( "netInterface Test, forwarding verification", "[netInterfaceForwardin
     REQUIRE( n_int->status() == IDLE );
     REQUIRE( d_int->status() == IDLE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s_int->status() == WAITING_FOR_DIFS );
     REQUIRE( n_int->status() == IDLE );
     REQUIRE( d_int->status() == IDLE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s_int->status() == SENDING_MESSAGE );
     REQUIRE( n_int->status() == RECEIVING_MESSAGE );
     REQUIRE( d_int->status() == IDLE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s_int->status() == WAITING_FOR_ACK );
     REQUIRE( n_int->status() == RECEIVING_MESSAGE );
     REQUIRE( d_int->status() == IDLE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s_int->status() == WAITING_FOR_ACK );
     REQUIRE( n_int->status() == WAITING_FOR_SIFS );
     REQUIRE( d_int->status() == IDLE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s_int->status() == RECEIVING_MESSAGE );
     REQUIRE( n_int->status() == SENDING_ACK );
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s_int->status() == RECEIVING_MESSAGE );
     REQUIRE( n_int->status() == WAITING_FOR_DIFS );
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s_int->status() == IDLE );
     REQUIRE( n_int->status() == WAITING_FOR_DIFS );
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s_int->status() == IDLE );
     REQUIRE( n_int->status() == WAITING_FOR_DIFS );
     REQUIRE( d_int->status() == IDLE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s_int->status() == RECEIVING_MESSAGE );
     REQUIRE( n_int->status() == SENDING_MESSAGE );
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s_int->status() == RECEIVING_MESSAGE );
     REQUIRE( n_int->status() == WAITING_FOR_ACK );
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s_int->status() == IDLE );
     REQUIRE( n_int->status() == WAITING_FOR_ACK );
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s_int->status() == IDLE );
     REQUIRE( n_int->status() == WAITING_FOR_ACK );
     REQUIRE( d_int->status() == WAITING_FOR_SIFS );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s_int->status() == IDLE );
     REQUIRE( n_int->status() == RECEIVING_MESSAGE );
     REQUIRE( d_int->status() == SENDING_ACK );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s_int->status() == IDLE );
     REQUIRE( n_int->status() == RECEIVING_MESSAGE );
     REQUIRE( d_int->status() == IDLE );
 
-    std::cout << std::endl;
     SIMUL.sim_step();
 
     REQUIRE( s_int->status() == IDLE );
@@ -188,6 +177,12 @@ TEST_CASE( "netInterface Test, forwarding verification", "[netInterfaceForwardin
     REQUIRE( s_int->status() == IDLE );
     REQUIRE( n_int->status() == IDLE );
     REQUIRE( d_int->status() == IDLE );
+
+    REQUIRE( s->consumed() == 0 );
+    REQUIRE( n->consumed() == 0 );
+    REQUIRE( d->consumed() == 1 );
+
+    REQUIRE( s->produced() == 1 );
 
     REQUIRE_THROWS( SIMUL.getNextEventTime() );
 

@@ -2,7 +2,9 @@
 
 Experiment::Experiment() :
   nodeId(0)
-{}
+{
+  _interfacesTrace = std::make_shared<TraceAscii>("experimentNetInterfacesTrace.txt");
+}
 
 void Experiment::generateLinks()
 {
@@ -60,7 +62,7 @@ const std::shared_ptr<Source> Experiment::createNode(std::pair <int,int> p,
   //std::cout << "\tPosition:\t[ " << p.first << " , " << p.second << " ]" << std::endl;
   //std::cout << "\tRadius:\t\t" << radius << std::endl;
 
-  auto n = std::make_shared<Source>(name, p, a);
+  auto n = std::make_shared<Source>(name, p, a, 100);
   _nodes.push_back(n);
 
   return n;
@@ -82,6 +84,8 @@ const std::shared_ptr<WifiInterface> Experiment::createInterface(const std::shar
   auto n_int = std::make_shared<WifiInterface>(interfaceName, radius, n);
 
   n->netInterface(n_int);
+
+  n_int->addTrace(_interfacesTrace);
 
   return n_int;
 }
@@ -157,10 +161,8 @@ void Experiment::start(double UMIN,
 
   for (double u=UMIN; u<=UMAX; u+=USTEP) {
 
-    double l = 6 * AVG_LEN / u;
-
     for (auto o : _nodes)
-      o->setInterval(std::shared_ptr<RandomVar>(new UniformVar(1,l)));
+      o->setInterval(std::shared_ptr<RandomVar>(new DeltaVar(100)));
 
     //SIMUL.dbg.setStream("log.txt");
     //SIMUL.dbg.enable(_ETHLINK_DBG);
@@ -169,7 +171,15 @@ void Experiment::start(double UMIN,
 
     try {
       cout << "U = " << u << endl;
-      SIMUL.run(SIM_LEN, 5);
+      SIMUL.run(SIM_LEN, 1);
+
+/*
+      SIMUL.initSingleRun();
+      SIMUL.run_to(182683);
+      SIMUL.endSingleRun();
+*/
+
+      _interfacesTrace->close();
       output.write(u);
     } catch (BaseExc &e) {
       cout << e.what() << endl;

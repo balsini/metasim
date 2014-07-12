@@ -14,7 +14,7 @@ class Experiment
 {
   unsigned int nodeId;
   std::vector<std::shared_ptr<Node>> _nodes;
-
+  std::shared_ptr<TraceAscii> _interfacesTrace;
   /**
    * For each node, checks if other nodes are in range.
    * The neighbours are added to the node link,

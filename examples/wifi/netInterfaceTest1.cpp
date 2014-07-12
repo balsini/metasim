@@ -29,6 +29,7 @@ TEST_CASE( "netInterface Test, simple communication", "[netInterfaceCommunicatio
 
   auto interfacesTrace = std::make_shared<TraceAscii>("netInterfacesTrace1.txt");
 
+  auto period = std::make_shared<DeltaVar>(100);
   std::vector<double> times{10};
 
   auto at = std::make_shared<DetVar>(times);
@@ -37,6 +38,9 @@ TEST_CASE( "netInterface Test, simple communication", "[netInterfaceCommunicatio
                                     std::make_pair(0.0, 0.0),
                                     at,
                                     1);
+
+  s->setInterval(period);
+
   auto ss = static_pointer_cast<Node>(s);
   auto d = std::make_shared<Node>(std::string("D"),
                                   std::make_pair(0, 1));

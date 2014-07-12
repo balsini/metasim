@@ -37,6 +37,7 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
   std::vector<double> times{10, 20, 70};
 
   auto at = std::make_shared<DetVar>(times);
+  auto period = std::make_shared<DeltaVar>(100);
 
   auto s1 = std::make_shared<Source>(std::string("S1"),
                                      std::make_pair(0.0, 0.0),
@@ -50,6 +51,10 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
                                      std::make_pair(0.2, 0.0),
                                      at,
                                      1);
+
+  s1->setInterval(period);
+  s2->setInterval(period);
+  s3->setInterval(period);
 
   auto ss1 = static_pointer_cast<Node>(s1);
   auto ss2 = static_pointer_cast<Node>(s2);
@@ -109,123 +114,75 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3_int->status() == IDLE );
     REQUIRE( d_int->status() == IDLE );
 
-    SIMUL.sim_step();
+    SIMUL.run_to(11);
 
     REQUIRE( s1_int->status() == WAITING_FOR_DIFS );
     REQUIRE( s2_int->status() == IDLE );
     REQUIRE( s3_int->status() == IDLE );
     REQUIRE( d_int->status() == IDLE );
 
-    SIMUL.sim_step();
+    SIMUL.run_to(21);
 
     REQUIRE( s1_int->status() == WAITING_FOR_DIFS );
     REQUIRE( s2_int->status() == WAITING_FOR_DIFS );
     REQUIRE( s3_int->status() == IDLE );
     REQUIRE( d_int->status() == IDLE );
 
-    SIMUL.sim_step();
+    SIMUL.run_to(39);
 
     REQUIRE( s1_int->status() == SENDING_MESSAGE );
     REQUIRE( s2_int->status() == WAITING_FOR_DIFS );
     REQUIRE( s3_int->status() == RECEIVING_MESSAGE);
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
-    SIMUL.sim_step();
+    SIMUL.run_to(49);
 
     REQUIRE( s1_int->status() == SENDING_MESSAGE );
     REQUIRE( s2_int->status() == WAITING_FOR_BACKOFF );
     REQUIRE( s3_int->status() == RECEIVING_MESSAGE);
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
-    SIMUL.sim_step();
-
-    REQUIRE( s1_int->status() == SENDING_MESSAGE );
-    REQUIRE( s2_int->status() == WAITING_FOR_BACKOFF );
-    REQUIRE( s3_int->status() == RECEIVING_MESSAGE);
-    REQUIRE( d_int->status() == RECEIVING_MESSAGE );
-
-    SIMUL.sim_step();
-
-    REQUIRE( s1_int->status() == WAITING_FOR_ACK );
-    REQUIRE( s2_int->status() == WAITING_FOR_BACKOFF );
-    REQUIRE( s3_int->status() == RECEIVING_MESSAGE);
-    REQUIRE( d_int->status() == RECEIVING_MESSAGE );
-
-    SIMUL.sim_step();
-
-    REQUIRE( s1_int->status() == WAITING_FOR_ACK );
-    REQUIRE( s2_int->status() == WAITING_FOR_BACKOFF );
-    REQUIRE( s3_int->status() == RECEIVING_MESSAGE);
-    REQUIRE( d_int->status() == WAITING_FOR_SIFS );
-
-    SIMUL.sim_step();
-    SIMUL.sim_step();
+    SIMUL.run_to(295);
 
     REQUIRE( s1_int->status() == WAITING_FOR_ACK );
     REQUIRE( s2_int->status() == WAITING_FOR_BACKOFF );
     REQUIRE( s3_int->status() == WAITING_FOR_DIFS);
     REQUIRE( d_int->status() == WAITING_FOR_SIFS );
 
-    SIMUL.sim_step();
+    SIMUL.run_to(305);
 
     REQUIRE( s1_int->status() == RECEIVING_MESSAGE );
     REQUIRE( s2_int->status() == WAITING_FOR_BACKOFF );
     REQUIRE( s3_int->status() == WAITING_FOR_DIFS);
     REQUIRE( d_int->status() == SENDING_ACK );
 
-    SIMUL.sim_step();
-
-    REQUIRE( s1_int->status() == RECEIVING_MESSAGE );
-    REQUIRE( s2_int->status() == WAITING_FOR_BACKOFF );
-    REQUIRE( s3_int->status() == WAITING_FOR_DIFS);
-    REQUIRE( d_int->status() == IDLE );
-
-    SIMUL.sim_step();
+    SIMUL.run_to(310);
 
     REQUIRE( s1_int->status() == IDLE );
     REQUIRE( s2_int->status() == WAITING_FOR_BACKOFF );
     REQUIRE( s3_int->status() == WAITING_FOR_DIFS);
     REQUIRE( d_int->status() == IDLE );
 
-    SIMUL.sim_step();
-    SIMUL.sim_step();
+    SIMUL.run_to(316);
 
     REQUIRE( s1_int->status() == RECEIVING_MESSAGE );
     REQUIRE( s2_int->status() == SENDING_MESSAGE );
     REQUIRE( s3_int->status() == WAITING_FOR_DIFS);
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
 
-    SIMUL.sim_step();
+    SIMUL.run_to(323);
 
     REQUIRE( s1_int->status() == RECEIVING_MESSAGE );
     REQUIRE( s2_int->status() == SENDING_MESSAGE );
-    REQUIRE( s3_int->status() == WAITING_FOR_BACKOFF);
+    REQUIRE( s3_int->status() == WAITING_FOR_BACKOFF );
     REQUIRE( d_int->status() == RECEIVING_MESSAGE );
-
-    SIMUL.sim_step();
-
-    REQUIRE( s1_int->status() == RECEIVING_MESSAGE );
-    REQUIRE( s2_int->status() == WAITING_FOR_ACK );
-    REQUIRE( s3_int->status() == WAITING_FOR_BACKOFF);
-    REQUIRE( d_int->status() == RECEIVING_MESSAGE );
-
-    SIMUL.sim_step();
-
-    REQUIRE( s1_int->status() == RECEIVING_MESSAGE );
-    REQUIRE( s2_int->status() == WAITING_FOR_ACK );
-    REQUIRE( s3_int->status() == WAITING_FOR_BACKOFF);
-    REQUIRE( d_int->status() == WAITING_FOR_SIFS );
-
-    SIMUL.sim_step();
-
-    REQUIRE( s1_int->status() == IDLE );
-    REQUIRE( s2_int->status() == WAITING_FOR_ACK );
-    REQUIRE( s3_int->status() == WAITING_FOR_BACKOFF);
-    REQUIRE( d_int->status() == WAITING_FOR_SIFS );
-
-    SIMUL.sim_step();
 
     SIMUL.run_to(50000);
+
+    REQUIRE( s1->produced() == 1);
+    REQUIRE( s2->produced() == 1);
+    REQUIRE( s3->produced() == 1);
+    REQUIRE( d->consumed() == 3);
 
     REQUIRE( s1_int->status() == IDLE );
     REQUIRE( s2_int->status() == IDLE );

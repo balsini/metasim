@@ -18,9 +18,13 @@ TEST_CASE( "Node Test", "[node]" )
   auto interfacesTrace = std::make_shared<TraceAscii>("netInterfacesTraceNode.txt");
 
   auto at = std::make_shared<DeltaVar>(1);
+  auto period = std::make_shared<DeltaVar>(1);
 
   auto s = std::make_shared<Source>(std::string("src1"), std::make_pair(0, 0), at);
   auto ss = static_pointer_cast<Node>(s);
+
+  s->setInterval(period);
+
   auto d = std::make_shared<Node>(std::string("dst1"), std::make_pair(0, 1));
 
   auto s_int = std::make_shared<WifiInterface>("s_int", 1.1, ss);
