@@ -7,6 +7,19 @@ LDADD = -lmetasim
 
 noinst_PROGRAMS = netInterfaceTest1 netInterfaceTest2 netInterfaceTest3 netInterfaceTest4 nodeTest linkTest messageTest wifi
 
+noinst_LIBRARIES = libwifi.a
+
+libwifi_a_SOURCES = experiment.cpp\
+	experiment.hpp\
+	link.cpp \
+	link.hpp \
+	message.cpp \
+	message.hpp \
+	netinterface.cpp \
+	netinterface.hpp \
+	node.cpp \
+	node.hpp
+
 nodeTest_SOURCES = nodeTest.cpp\
 	link.cpp \
 	link.hpp \
@@ -88,5 +101,5 @@ wifi_SOURCES = example.cpp \
 	netinterface.hpp \
 	node.cpp \
 	node.hpp
-	
+
 CLEANFILES = coll.txt log.txt
