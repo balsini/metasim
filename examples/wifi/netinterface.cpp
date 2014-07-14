@@ -107,7 +107,9 @@ void WifiInterface::onEndACKTrans(MetaSim::Event * e)
 {
   //std::cout << this->getName() << ": onEndACKTrans" << std::endl;
 
-  if (!_data_received_evt.isInQueue())
+  _ack_queue.pop_front();
+
+  if (not _data_received_evt.isInQueue())
     trySend();
 }
 
@@ -193,7 +195,7 @@ void WifiInterface::onDIFSElapsed(MetaSim::Event * e)
     _link->send(_out_queue.front());
   }
 
-  ////std::cout << "DONE" << std::endl;
+  //std::cout << "DONE" << std::endl;
 }
 
 void WifiInterface::onSIFSElapsed(MetaSim::Event * e)
@@ -204,11 +206,10 @@ void WifiInterface::onSIFSElapsed(MetaSim::Event * e)
 
   status(SENDING_ACK);
 
-  //std::cout << "posting event 4" << std::endl;
+  //std::cout << "posting event 4 at: " << SIMUL.getTime() + Tick(_ack_queue.front()->transTime()) << std::endl;
   _end_ACKtrans_evt.post(SIMUL.getTime() + Tick(_ack_queue.front()->transTime()));
   //std::cout << "DONE" << std::endl;
   _link->send(_ack_queue.front());
-  _ack_queue.pop_front();
 }
 
 void WifiInterface::onBackoffTimeElapsed(MetaSim::Event * e)
@@ -311,6 +312,12 @@ void WifiInterface::onDataReceived(Event * e)
 
       break;
 
+    case SENDING_ACK:
+
+      status(IDLE);
+
+      break;
+
     default: break;
   }
 }
@@ -355,7 +362,7 @@ void WifiInterface::trySend()
     //std::cout << "DONE" << std::endl;
   }
 
-  ////std::cout << "DONE" << std::endl;
+  //std::cout << "DONE" << std::endl;
 }
 
 void WifiInterface::receive(const std::shared_ptr<Message> &m)
@@ -460,7 +467,7 @@ void WifiInterface::receive(const std::shared_ptr<Message> &m)
         //std::cout << "DONE" << std::endl;
       }
 
-      ////std::cout << "DONE" << std::endl;
+      //std::cout << "DONE" << std::endl;
 
       break;
   }
@@ -494,7 +501,7 @@ void WifiInterface::status(WifiInterfaceStatus s)
     //if (getName() == "Interface_Node_5_[3,1]") {
 
 
-    /*
+/*
     std::cout << ss.str();
 
       std::cout << "_end_trans_evt :\t";
