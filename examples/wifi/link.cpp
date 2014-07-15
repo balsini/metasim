@@ -24,25 +24,25 @@ void WifiLink::send(std::unique_ptr<Message> &m)
 {
   auto m_shared = std::make_shared<Message>(Message(*m.get()));
 
-  for (auto o : _interfaces) {
+  for (auto &o : _interfaces) {
     //std::cout << "Broadcasting message to: " << o->getName() << std::endl;
     o->receive(m_shared);
   }
 }
 
-void WifiLink::addInterface(const std::shared_ptr<WifiInterface> &i)
+void WifiLink::addInterface(WifiInterface * i)
 {
   //std::cout << "Link: added interface" << std::endl;
 
   _interfaces.push_back(i);
 }
 
-const std::shared_ptr<WifiInterface> WifiLink::getRightInterface()
+WifiInterface * WifiLink::getRightInterface()
 {
   if (_interfaces.size() == 0)
     throw LinkException("Link is empty");
 
-  std::shared_ptr<WifiInterface> i = _interfaces.front();
+  auto i = _interfaces.front();
   double maxRight = std::get<1>(i->node()->position());
 
   // Search for the rightest
@@ -56,11 +56,11 @@ const std::shared_ptr<WifiInterface> WifiLink::getRightInterface()
   return i;
 }
 
-const std::shared_ptr<WifiInterface> WifiLink::getDownInterface() {
+WifiInterface * WifiLink::getDownInterface() {
   if (_interfaces.size() == 0)
     throw LinkException("Link is empty");
 
-  std::shared_ptr<WifiInterface> i = _interfaces.front();
+  auto i = _interfaces.front();
   double maxDown = std::get<0>(i->node()->position());
 
   // Search for the rightest

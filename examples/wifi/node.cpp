@@ -42,14 +42,14 @@ std::pair <double, double> Node::position()
   return _position;
 }
 
-void Node::netInterface(std::shared_ptr<WifiInterface> &n)
+void Node::netInterface(std::unique_ptr<WifiInterface> n)
 {
-  _net_interf = n;
+  _net_interf = std::move(n);
 }
 
-std::shared_ptr<WifiInterface> Node::netInterface()
+WifiInterface * Node::netInterface()
 {
-  return _net_interf;
+  return _net_interf.get();
 }
 
 void Source::newRun()
@@ -76,7 +76,7 @@ void Source::produce()
     //std::cout << this->getName() << ": sending message to: " <<  destinationNode->getName() << std::endl;
     int msgLen = 256;
 
-    auto m = unique_ptr<Message>(new Message(msgLen, this, destinationNode.get(), idRand.get()));
+    auto m = unique_ptr<Message>(new Message(msgLen, this, destinationNode, idRand.get()));
     m->transTime(Tick(msgLen));
 
     _net_interf->send(m);
@@ -92,7 +92,7 @@ void Node::put(std::unique_ptr<Message> &m)
   //std::cout << this->getName() << ": received message from: " << m->sourceNode()->getName() << std::endl;
 }
 
-void Source::addDest(std::shared_ptr<Node> n)
+void Source::addDest(Node * n)
 {
   _dest.push_back(n);
 }

@@ -1,9 +1,25 @@
 #include "experiment.hpp"
 
+#include <sstream>
+
+std::string int2string(int number)
+{
+  std::stringstream ss;
+  ss << number;
+
+  return ss.str();
+}
+
 Experiment::Experiment() :
   nodeId(0)
 {
-  _interfacesTrace = std::make_shared<TraceAscii>("experimentNetInterfacesTrace.txt");
+  std::cout << "Experiment created" << std::endl;
+  _interfacesTrace = std::make_shared<TraceAscii>("traces/experimentNetInterfacesTrace.txt");
+}
+
+Experiment::~Experiment()
+{
+  std::cout << "Experiment deleted" << std::endl;
 }
 
 void Experiment::generateLinks()
@@ -12,9 +28,9 @@ void Experiment::generateLinks()
 
   std::cout << "Generating Links ... " << std::endl;
 
-  for (auto n : _nodes) {
+  for (auto &n : _nodes) {
     //std::cout << "Node: " << n->getName() << std::endl;
-    for (auto other : _nodes) {
+    for (auto &other : _nodes) {
       if (other != n) {
         d = sqrt(pow(std::get<0>(n->position()) - std::get<0>(other->position()), 2)
                  + pow(std::get<1>(n->position()) - std::get<1>(other->position()), 2));
@@ -22,8 +38,7 @@ void Experiment::generateLinks()
         if (d < n->netInterface()->radius()) {
           //std::cout << "\t" << other->getName() << " -- distance: " << d << std::endl;
           //std::cout << "\t\tIN RANGE" << std::endl;
-          std::shared_ptr<WifiInterface> interf(other->netInterface());
-          n->netInterface()->link()->addInterface(interf);
+          n->netInterface()->link()->addInterface(other->netInterface());
         }
       }
     }
@@ -32,7 +47,7 @@ void Experiment::generateLinks()
   std::cout << "DONE" << std::endl;
 }
 
-const std::shared_ptr<Node> Experiment::createNode(std::pair <int,int> p, double radius, unsigned int nodeId, const std::string &name)
+Node * Experiment::createNode(std::pair <double,double> p, double radius, unsigned int nodeId, const std::string &name)
 {
   ///////////////////////////
   // Node Creation
@@ -42,17 +57,17 @@ const std::shared_ptr<Node> Experiment::createNode(std::pair <int,int> p, double
   //std::cout << "\tPosition:\t[ " << p.first << " , " << p.second << " ]" << std::endl;
   //std::cout << "\tRadius:\t\t" << radius << std::endl;
 
-  auto n = std::make_shared<Node>(name, p);
-  _nodes.push_back(n);
+  auto n = new Node(name, p);
+  _nodes.push_back(std::move(std::unique_ptr<Node>(n)));
 
   return n;
 }
 
-const std::shared_ptr<Source> Experiment::createNode(std::pair <int,int> p,
-                                                     double radius,
-                                                     unsigned int nodeId,
-                                                     const std::string &name,
-                                                     const std::shared_ptr<RandomVar> &a)
+Source * Experiment::createNode(std::pair<double, double> p,
+                                double radius,
+                                unsigned int nodeId,
+                                const std::string &name,
+                                const std::shared_ptr<RandomVar> &a)
 {
   ///////////////////////////
   // Node Creation
@@ -62,15 +77,15 @@ const std::shared_ptr<Source> Experiment::createNode(std::pair <int,int> p,
   //std::cout << "\tPosition:\t[ " << p.first << " , " << p.second << " ]" << std::endl;
   //std::cout << "\tRadius:\t\t" << radius << std::endl;
 
-  auto n = std::make_shared<Source>(name, p, a, 100);
-  _nodes.push_back(n);
+  auto n = new Source(name, p, a, 100);
+  _nodes.push_back(std::move(std::unique_ptr<Node>(n)));
 
   return n;
 }
 
-const std::shared_ptr<WifiInterface> Experiment::createInterface(const std::shared_ptr<Node> &n,
-                                                                 const std::string &name,
-                                                                 double radius)
+WifiInterface * Experiment::createInterface(Node * n,
+                                            const std::string &name,
+                                            double radius)
 {
   ///////////////////////////
   // Node Interface creation
@@ -81,16 +96,14 @@ const std::shared_ptr<WifiInterface> Experiment::createInterface(const std::shar
 
   //std::cout << "Creating Interface: " << interfaceName << std::endl;
 
-  auto n_int = std::make_shared<WifiInterface>(interfaceName, radius, n);
+  auto n_int = new WifiInterface(interfaceName, radius, n);
 
-  n->netInterface(n_int);
-
-  n_int->addTrace(_interfacesTrace);
+  n->netInterface(std::move(std::unique_ptr<WifiInterface>(n_int)));
 
   return n_int;
 }
 
-void Experiment::createLink(const std::string &name, const std::shared_ptr<WifiInterface> & n_int)
+void Experiment::createLink(const std::string &name, WifiInterface * n_int)
 {
   ///////////////////////////
   // Node Link creation
@@ -101,12 +114,14 @@ void Experiment::createLink(const std::string &name, const std::shared_ptr<WifiI
 
   //std::cout << "Creating Link: " << linkName << std::endl;
 
-  auto n_l = std::make_shared<WifiLink>(linkName);
-  n_int->link(n_l);
+  auto n_l = new WifiLink(linkName);
+  n_int->link(std::move(std::unique_ptr<WifiLink>(n_l)));
 }
 
-const std::shared_ptr<Node> Experiment::addNode(std::pair <int,int> p, double radius)
+Node * Experiment::addNode(std::pair<double, double> p, double radius)
 {
+  std::cout << "Node added" << std::endl;
+
   std::string name = "Node_";
 
   name.append(std::to_string(++nodeId));
@@ -123,8 +138,10 @@ const std::shared_ptr<Node> Experiment::addNode(std::pair <int,int> p, double ra
   return n;
 }
 
-const std::shared_ptr<Source> Experiment::addNode(std::pair <int,int> p, double radius, const std::shared_ptr<RandomVar> &a)
+Source * Experiment::addNode(std::pair<double, double> p, double radius, const std::shared_ptr<RandomVar> &a)
 {
+  std::cout << "Source added" << std::endl;
+
   std::string name = "Node_";
 
   name.append(std::to_string(++nodeId));
@@ -135,17 +152,15 @@ const std::shared_ptr<Source> Experiment::addNode(std::pair <int,int> p, double 
               "]");
 
   auto n = createNode(p, radius, nodeId, name, a);
-  auto nn = static_pointer_cast<Node>(n);
-  auto n_int = createInterface(nn, name, radius);
+  auto n_int = createInterface(n, name, radius);
   createLink(name, n_int);
 
   return n;
 }
 
-void Experiment::start(double UMIN,
-                       double UMAX,
-                       double USTEP,
-                       int AVG_LEN,
+void Experiment::start(unsigned int period_i,
+                       unsigned int period_s,
+                       unsigned int period_e,
                        Tick SIM_LEN)
 {
   generateLinks();
@@ -159,10 +174,10 @@ void Experiment::start(double UMIN,
 
   std::cout << "Simulating ...\n" << std::endl;
 
-  for (double u=UMIN; u<=UMAX; u+=USTEP) {
+  for (unsigned int p = period_i; p <= period_e; p += period_s) {
 
-    for (auto o : _nodes)
-      o->setInterval(std::shared_ptr<RandomVar>(new DeltaVar(100)));
+    for (auto &o : _nodes)
+      o->setInterval(std::shared_ptr<RandomVar>(new DeltaVar(p)));
 
     //SIMUL.dbg.setStream("log.txt");
     //SIMUL.dbg.enable(_ETHLINK_DBG);
@@ -170,17 +185,29 @@ void Experiment::start(double UMIN,
     //SIMUL.dbg.enable(_NODE_DBG);
 
     try {
-      cout << "U = " << u << endl;
+      cout << "Period = " << p << endl;
+
+      std::string traceName = "traces/experimentNetInterfacesTrace";
+
+      traceName.append("_-aSQUARE_-n" + int2string(_nodes.size()) + "_-p" + int2string(p));
+      traceName.append(".txt");
+
+      _interfacesTrace = std::unique_ptr<TraceAscii>(new TraceAscii(traceName.c_str()));
+
+      for (auto &o : _nodes)
+        o->netInterface()->addTrace(_interfacesTrace.get());
+
+
       SIMUL.run(SIM_LEN, 1);
 
-/*
+      /*
       SIMUL.initSingleRun();
       SIMUL.run_to(182683);
       SIMUL.endSingleRun();
 */
 
       _interfacesTrace->close();
-      output.write(u);
+      //output.write(u);
     } catch (BaseExc &e) {
       cout << e.what() << endl;
     }

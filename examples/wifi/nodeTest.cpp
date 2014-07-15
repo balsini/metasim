@@ -9,47 +9,44 @@
 
 #include "message.hpp"
 #include "node.hpp"
+#include "netinterface.hpp"
 
 using namespace MetaSim;
 
 TEST_CASE( "Node Test", "[node]" )
 {
-
-  auto interfacesTrace = std::make_shared<TraceAscii>("netInterfacesTraceNode.txt");
+  auto interfacesTrace = std::unique_ptr<TraceAscii>(new TraceAscii("traces/netInterfacesTraceNode.txt"));
 
   auto at = std::make_shared<DeltaVar>(1);
   auto period = std::make_shared<DeltaVar>(1);
 
-  auto s = std::make_shared<Source>(std::string("src1"), std::make_pair(0, 0), at);
-  auto ss = static_pointer_cast<Node>(s);
+  auto s = std::unique_ptr<Source>(new Source(std::string("src1"), std::make_pair(0, 0), at));
 
   s->setInterval(period);
 
-  auto d = std::make_shared<Node>(std::string("dst1"), std::make_pair(0, 1));
+  auto d = std::unique_ptr<Node>(new Node(std::string("dst1"), std::make_pair(0, 1)));
 
-  auto s_int = std::make_shared<WifiInterface>("s_int", 1.1, ss);
-  auto d_int = std::make_shared<WifiInterface>("d_int", 1.1, d);
+  auto s_int = std::unique_ptr<WifiInterface>(new WifiInterface("s_int", 1.1, s.get()));
+  auto d_int = std::unique_ptr<WifiInterface>(new WifiInterface("d_int", 1.1, d.get()));
 
-  s_int->addTrace(interfacesTrace);
-  d_int->addTrace(interfacesTrace);
+  s->netInterface(std::move(s_int));
+  d->netInterface(std::move(d_int));
 
-  auto s_lnk = std::make_shared<WifiLink>("s_lnk");
-  auto d_lnk = std::make_shared<WifiLink>("d_lnk");
+  s->netInterface()->addTrace(interfacesTrace.get());
+  d->netInterface()->addTrace(interfacesTrace.get());
 
-  s_int->link(s_lnk);
-  d_int->link(d_lnk);
+  auto s_lnk = std::unique_ptr<WifiLink>(new WifiLink("s_lnk"));
+  auto d_lnk = std::unique_ptr<WifiLink>(new WifiLink("d_lnk"));
 
-  s_lnk->addInterface(d_int);
-  d_lnk->addInterface(s_int);
-
-  REQUIRE_THROWS( s->produce() );
-
-  s->netInterface(s_int);
-  d->netInterface(d_int);
+  s->netInterface()->link(std::move(s_lnk));
+  d->netInterface()->link(std::move(d_lnk));
 
   REQUIRE_THROWS( s->produce() );
 
-  s->addDest(d);
+  s->netInterface()->link()->addInterface(d->netInterface());
+  d->netInterface()->link()->addInterface(s->netInterface());
+
+  s->addDest(d.get());
 
   // Checks if message is correctly consumed
 

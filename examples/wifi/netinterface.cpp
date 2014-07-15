@@ -11,14 +11,14 @@
 
 using namespace MetaSim;
 
-NetInterface::NetInterface(const std::string &name, const std::shared_ptr<Node> &n) :
+NetInterface::NetInterface(const std::string &name, Node * n) :
   Entity(name), _node(n)
 {}
 
 NetInterface::~NetInterface()
 {}
 
-WifiInterface::WifiInterface(const std::string &name, double radius, const std::shared_ptr<Node> &n) :
+WifiInterface::WifiInterface(const std::string &name, double radius, Node * n) :
   NetInterface(name, n),
   _collision_detected(false),
   _status(IDLE),
@@ -38,7 +38,6 @@ WifiInterface::WifiInterface(const std::string &name, double radius, const std::
   register_handler(_wait_for_ACK_evt, this, &WifiInterface::onACKTimeElapsed);
   register_handler(_wait_for_backoff_evt, this, &WifiInterface::onBackoffTimeElapsed);
 
-  _wifiTrace.reset();
   _radius = radius;
   _c_w = _c_wMin;
 }
@@ -60,7 +59,7 @@ void WifiInterface::newRun()
 void WifiInterface::endRun()
 {}
 
-const std::shared_ptr<WifiInterface> WifiInterface::routingProtocol(Node * n)
+WifiInterface * WifiInterface::routingProtocol(Node * n)
 {
   //std::cout << "routingProtocol" << std::endl;
   double myPosR = std::get<0>(_node->position()),
@@ -260,8 +259,8 @@ void WifiInterface::onDataReceived(Event * e)
             //std::cout << "\tNormal Message, send ACK after SIFS" << std::endl;
 
             auto m_ack_unique = std::unique_ptr<Message>(new Message(10,
-                                                                     _node.get(),
-                                                                     _incoming_message->destInterface()->node().get(),
+                                                                     _node,
+                                                                     _incoming_message->destInterface()->node(),
                                                                      _incoming_message->id(),
                                                                      true));
             m_ack_unique->transTime(5);
@@ -271,7 +270,7 @@ void WifiInterface::onDataReceived(Event * e)
             sendACK(m_ack_unique);
 
             // Check if it has to be forwarded
-            if (_incoming_message->destNode() == _node.get()) {
+            if (_incoming_message->destNode() == _node) {
               // Message is for my node
               auto message_unique = std::unique_ptr<Message>(new Message(*_incoming_message));
               _node->put(message_unique);
@@ -340,7 +339,7 @@ void WifiInterface::send(std::unique_ptr<Message> &m)
 
   // Updates messages MAC level addresses
   m->sourceInterface(this);
-  m->destInterface(routingProtocol(m->destNode()).get());
+  m->destInterface(routingProtocol(m->destNode()));
 
   _out_queue.push_back(std::move(m));
 

@@ -58,7 +58,7 @@ protected:
   /**
    * Wifi MAC Interface
    */
-  std::shared_ptr<WifiInterface> _net_interf;
+  std::unique_ptr<WifiInterface> _net_interf;
 
 public:
   /**
@@ -69,6 +69,7 @@ public:
    */
   Node(const std::string &name,
        std::pair <double, double> position);
+  ~Node() {}
 
   /**
    * Gets node position
@@ -80,13 +81,13 @@ public:
    * The net interface connected to the node
    * @returns pointer to the node interface
    */
-  std::shared_ptr<WifiInterface> netInterface();
+  WifiInterface * netInterface();
 
   /**
    * Sets the node's wifi network interface
    * @param n WifiInterface pointer
    */
-  void netInterface(std::shared_ptr<WifiInterface> & n);
+  void netInterface(std::unique_ptr<WifiInterface> n);
 
   /**
    * Sets the time interval
@@ -122,7 +123,7 @@ class Source : public Node
   /**
    * @brief _dest destination nodes
    */
-  std::vector<std::shared_ptr<Node>> _dest;
+  std::vector<Node *> _dest;
 
 public:
   /**
@@ -175,7 +176,7 @@ public:
    * Adds a new destination node
    * @param n destination node
    */
-  void addDest(std::shared_ptr<Node> n);
+  void addDest(Node * n);
 
   /**
    * Produces a message and directly sends it

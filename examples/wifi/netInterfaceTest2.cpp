@@ -9,6 +9,7 @@
 #include <simul.hpp>
 #include <trace.hpp>
 
+#include "node.hpp"
 #include "link.hpp"
 #include "netinterface.hpp"
 
@@ -32,150 +33,146 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
    * so they will try to avoid collisions.
    */
 
-  auto interfacesTrace = std::make_shared<TraceAscii>("netInterfacesTrace2.txt");
+  auto interfacesTrace = std::make_shared<TraceAscii>("traces/netInterfacesTrace2.txt");
 
   std::vector<double> times{10, 20, 70};
 
   auto at = std::make_shared<DetVar>(times);
   auto period = std::make_shared<DeltaVar>(100);
 
-  auto s1 = std::make_shared<Source>(std::string("S1"),
+  auto s1 = std::unique_ptr<Source>(new Source(std::string("S1"),
                                      std::make_pair(0.0, 0.0),
                                      at,
-                                     1);
-  auto s2 = std::make_shared<Source>(std::string("S2"),
+                                     1));
+  auto s2 = std::unique_ptr<Source>(new Source(std::string("S2"),
                                      std::make_pair(0.1, 0.0),
                                      at,
-                                     1);
-  auto s3 = std::make_shared<Source>(std::string("S3"),
+                                     1));
+  auto s3 = std::unique_ptr<Source>(new Source(std::string("S3"),
                                      std::make_pair(0.2, 0.0),
                                      at,
-                                     1);
+                                     1));
 
   s1->setInterval(period);
   s2->setInterval(period);
   s3->setInterval(period);
 
-  auto ss1 = static_pointer_cast<Node>(s1);
-  auto ss2 = static_pointer_cast<Node>(s2);
-  auto ss3 = static_pointer_cast<Node>(s3);
+  auto d = std::unique_ptr<Node>(new Node(std::string("D"),
+                                  std::make_pair(0.5, 0.0)));
 
-  auto d = std::make_shared<Node>(std::string("D"),
-                                  std::make_pair(0.5, 0.0));
+  auto s1_int = std::unique_ptr<WifiInterface>(new WifiInterface("S1_int", 5, s1.get()));
+  auto s2_int = std::unique_ptr<WifiInterface>(new WifiInterface("S2_int", 5, s2.get()));
+  auto s3_int = std::unique_ptr<WifiInterface>(new WifiInterface("S3_int", 5, s3.get()));
+  auto d_int = std::unique_ptr<WifiInterface>(new WifiInterface("D_int", 5, d.get()));
 
-  auto s1_int = std::make_shared<WifiInterface>("S1_int", 5, ss1);
-  auto s2_int = std::make_shared<WifiInterface>("S2_int", 5, ss2);
-  auto s3_int = std::make_shared<WifiInterface>("S3_int", 5, ss3);
-  auto d_int = std::make_shared<WifiInterface>("D_int", 5, d);
+  s1->netInterface(std::move(s1_int));
+  s2->netInterface(std::move(s2_int));
+  s3->netInterface(std::move(s3_int));
+  d->netInterface(std::move(d_int));
 
-  s1->netInterface(s1_int);
-  s2->netInterface(s2_int);
-  s3->netInterface(s3_int);
-  d->netInterface(d_int);
+  s1->netInterface()->addTrace(interfacesTrace.get());
+  s2->netInterface()->addTrace(interfacesTrace.get());
+  s3->netInterface()->addTrace(interfacesTrace.get());
+  d->netInterface()->addTrace(interfacesTrace.get());
 
-  s1_int->addTrace(interfacesTrace);
-  s2_int->addTrace(interfacesTrace);
-  s3_int->addTrace(interfacesTrace);
-  d_int->addTrace(interfacesTrace);
+  auto s1_lnk = std::unique_ptr<WifiLink>(new WifiLink("S1_lnk"));
+  auto s2_lnk = std::unique_ptr<WifiLink>(new WifiLink("S2_lnk"));
+  auto s3_lnk = std::unique_ptr<WifiLink>(new WifiLink("S3_lnk"));
+  auto d_lnk = std::unique_ptr<WifiLink>(new WifiLink("D_lnk"));
 
-  auto s1_lnk = std::make_shared<WifiLink>("S1_lnk");
-  auto s2_lnk = std::make_shared<WifiLink>("S2_lnk");
-  auto s3_lnk = std::make_shared<WifiLink>("S3_lnk");
-  auto d_lnk = std::make_shared<WifiLink>("D_lnk");
+  s1_lnk->addInterface(d->netInterface());
+  s1_lnk->addInterface(s2->netInterface());
+  s1_lnk->addInterface(s3->netInterface());
+  s2_lnk->addInterface(d->netInterface());
+  s2_lnk->addInterface(s1->netInterface());
+  s2_lnk->addInterface(s3->netInterface());
+  s3_lnk->addInterface(d->netInterface());
+  s3_lnk->addInterface(s1->netInterface());
+  s3_lnk->addInterface(s2->netInterface());
+  d_lnk->addInterface(s1->netInterface());
+  d_lnk->addInterface(s2->netInterface());
+  d_lnk->addInterface(s3->netInterface());
 
-  s1_lnk->addInterface(d_int);
-  s1_lnk->addInterface(s2_int);
-  s1_lnk->addInterface(s3_int);
-  s2_lnk->addInterface(d_int);
-  s2_lnk->addInterface(s1_int);
-  s2_lnk->addInterface(s3_int);
-  s3_lnk->addInterface(d_int);
-  s3_lnk->addInterface(s1_int);
-  s3_lnk->addInterface(s2_int);
-  d_lnk->addInterface(s1_int);
-  d_lnk->addInterface(s2_int);
-  d_lnk->addInterface(s3_int);
+  s1->netInterface()->link(std::move(s1_lnk));
+  s2->netInterface()->link(std::move(s2_lnk));
+  s3->netInterface()->link(std::move(s3_lnk));
+  d->netInterface()->link(std::move(d_lnk));
 
-  s1_int->link(s1_lnk);
-  s2_int->link(s2_lnk);
-  s3_int->link(s3_lnk);
-  d_int->link(d_lnk);
-
-  s1->addDest(d);
-  s2->addDest(d);
-  s3->addDest(d);
+  s1->addDest(d.get());
+  s2->addDest(d.get());
+  s3->addDest(d.get());
 
   SECTION( "Step by step communication analysis" )
   {
     SIMUL.initSingleRun();
 
-    REQUIRE( s1_int->status() == IDLE );
-    REQUIRE( s2_int->status() == IDLE );
-    REQUIRE( s3_int->status() == IDLE );
-    REQUIRE( d_int->status() == IDLE );
+    REQUIRE( s1->netInterface()->status() == IDLE );
+    REQUIRE( s2->netInterface()->status() == IDLE );
+    REQUIRE( s3->netInterface()->status() == IDLE );
+    REQUIRE( d->netInterface()->status() == IDLE );
 
     SIMUL.run_to(11);
 
-    REQUIRE( s1_int->status() == WAITING_FOR_DIFS );
-    REQUIRE( s2_int->status() == IDLE );
-    REQUIRE( s3_int->status() == IDLE );
-    REQUIRE( d_int->status() == IDLE );
+    REQUIRE( s1->netInterface()->status() == WAITING_FOR_DIFS );
+    REQUIRE( s2->netInterface()->status() == IDLE );
+    REQUIRE( s3->netInterface()->status() == IDLE );
+    REQUIRE( d->netInterface()->status() == IDLE );
 
     SIMUL.run_to(21);
 
-    REQUIRE( s1_int->status() == WAITING_FOR_DIFS );
-    REQUIRE( s2_int->status() == WAITING_FOR_DIFS );
-    REQUIRE( s3_int->status() == IDLE );
-    REQUIRE( d_int->status() == IDLE );
+    REQUIRE( s1->netInterface()->status() == WAITING_FOR_DIFS );
+    REQUIRE( s2->netInterface()->status() == WAITING_FOR_DIFS );
+    REQUIRE( s3->netInterface()->status() == IDLE );
+    REQUIRE( d->netInterface()->status() == IDLE );
 
     SIMUL.run_to(39);
 
-    REQUIRE( s1_int->status() == SENDING_MESSAGE );
-    REQUIRE( s2_int->status() == WAITING_FOR_DIFS );
-    REQUIRE( s3_int->status() == RECEIVING_MESSAGE);
-    REQUIRE( d_int->status() == RECEIVING_MESSAGE );
+    REQUIRE( s1->netInterface()->status() == SENDING_MESSAGE );
+    REQUIRE( s2->netInterface()->status() == WAITING_FOR_DIFS );
+    REQUIRE( s3->netInterface()->status() == RECEIVING_MESSAGE);
+    REQUIRE( d->netInterface()->status() == RECEIVING_MESSAGE );
 
     SIMUL.run_to(49);
 
-    REQUIRE( s1_int->status() == SENDING_MESSAGE );
-    REQUIRE( s2_int->status() == WAITING_FOR_BACKOFF );
-    REQUIRE( s3_int->status() == RECEIVING_MESSAGE);
-    REQUIRE( d_int->status() == RECEIVING_MESSAGE );
+    REQUIRE( s1->netInterface()->status() == SENDING_MESSAGE );
+    REQUIRE( s2->netInterface()->status() == WAITING_FOR_BACKOFF );
+    REQUIRE( s3->netInterface()->status() == RECEIVING_MESSAGE);
+    REQUIRE( d->netInterface()->status() == RECEIVING_MESSAGE );
 
     SIMUL.run_to(295);
 
-    REQUIRE( s1_int->status() == WAITING_FOR_ACK );
-    REQUIRE( s2_int->status() == WAITING_FOR_BACKOFF );
-    REQUIRE( s3_int->status() == WAITING_FOR_DIFS);
-    REQUIRE( d_int->status() == WAITING_FOR_SIFS );
+    REQUIRE( s1->netInterface()->status() == WAITING_FOR_ACK );
+    REQUIRE( s2->netInterface()->status() == WAITING_FOR_BACKOFF );
+    REQUIRE( s3->netInterface()->status() == WAITING_FOR_DIFS);
+    REQUIRE( d->netInterface()->status() == WAITING_FOR_SIFS );
 
     SIMUL.run_to(305);
 
-    REQUIRE( s1_int->status() == RECEIVING_MESSAGE );
-    REQUIRE( s2_int->status() == WAITING_FOR_BACKOFF );
-    REQUIRE( s3_int->status() == WAITING_FOR_DIFS);
-    REQUIRE( d_int->status() == SENDING_ACK );
+    REQUIRE( s1->netInterface()->status() == RECEIVING_MESSAGE );
+    REQUIRE( s2->netInterface()->status() == WAITING_FOR_BACKOFF );
+    REQUIRE( s3->netInterface()->status() == WAITING_FOR_DIFS);
+    REQUIRE( d->netInterface()->status() == SENDING_ACK );
 
     SIMUL.run_to(310);
 
-    REQUIRE( s1_int->status() == IDLE );
-    REQUIRE( s2_int->status() == WAITING_FOR_BACKOFF );
-    REQUIRE( s3_int->status() == WAITING_FOR_DIFS);
-    REQUIRE( d_int->status() == IDLE );
+    REQUIRE( s1->netInterface()->status() == IDLE );
+    REQUIRE( s2->netInterface()->status() == WAITING_FOR_BACKOFF );
+    REQUIRE( s3->netInterface()->status() == WAITING_FOR_DIFS);
+    REQUIRE( d->netInterface()->status() == IDLE );
 
     SIMUL.run_to(316);
 
-    REQUIRE( s1_int->status() == RECEIVING_MESSAGE );
-    REQUIRE( s2_int->status() == SENDING_MESSAGE );
-    REQUIRE( s3_int->status() == WAITING_FOR_DIFS);
-    REQUIRE( d_int->status() == RECEIVING_MESSAGE );
+    REQUIRE( s1->netInterface()->status() == RECEIVING_MESSAGE );
+    REQUIRE( s2->netInterface()->status() == SENDING_MESSAGE );
+    REQUIRE( s3->netInterface()->status() == WAITING_FOR_DIFS);
+    REQUIRE( d->netInterface()->status() == RECEIVING_MESSAGE );
 
     SIMUL.run_to(323);
 
-    REQUIRE( s1_int->status() == RECEIVING_MESSAGE );
-    REQUIRE( s2_int->status() == SENDING_MESSAGE );
-    REQUIRE( s3_int->status() == WAITING_FOR_BACKOFF );
-    REQUIRE( d_int->status() == RECEIVING_MESSAGE );
+    REQUIRE( s1->netInterface()->status() == RECEIVING_MESSAGE );
+    REQUIRE( s2->netInterface()->status() == SENDING_MESSAGE );
+    REQUIRE( s3->netInterface()->status() == WAITING_FOR_BACKOFF );
+    REQUIRE( d->netInterface()->status() == RECEIVING_MESSAGE );
 
     SIMUL.run_to(50000);
 
@@ -184,10 +181,10 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
     REQUIRE( s3->produced() == 1);
     REQUIRE( d->consumed() == 3);
 
-    REQUIRE( s1_int->status() == IDLE );
-    REQUIRE( s2_int->status() == IDLE );
-    REQUIRE( s3_int->status() == IDLE );
-    REQUIRE( d_int->status() == IDLE );
+    REQUIRE( s1->netInterface()->status() == IDLE );
+    REQUIRE( s2->netInterface()->status() == IDLE );
+    REQUIRE( s3->netInterface()->status() == IDLE );
+    REQUIRE( d->netInterface()->status() == IDLE );
 
     // No more events in queue
 

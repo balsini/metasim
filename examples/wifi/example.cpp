@@ -1,3 +1,7 @@
+#include <unistd.h>
+#include <string>
+#include <sstream>
+
 #include <simul.hpp>
 
 #include "experiment.hpp"
@@ -9,18 +13,67 @@
 
 using namespace MetaSim;
 
-const int ROWS = 2;
-const int COLUMNS = 2;
 
-const double UMIN = 0.5;
-const double UMAX = 0.5;
-const double USTEP = 0.1;
 
 const unsigned AVG_LEN = 800;
 const Tick SIM_LEN = (int) (AVG_LEN * 10000);
 
-int main()
+int main(int argc, char *argv[])
 {
+  std::string arrangement;
+  std::string nodes;
+  std::string periodInit;
+  std::string periodEnd;
+  std::string periodStep;
+  int c;
+
+  opterr = 0;
+  while ((c = getopt(argc, argv, "a:n:i:e:s:")) != -1) {
+    switch (c)
+    {
+      case 'a': // Arrangement
+        arrangement = optarg;
+        std::cout << "arrangement: " << arrangement << std::endl;
+        break;
+      case 'i':
+        periodInit = optarg;
+        std::cout << "period initial: " << periodInit << std::endl;
+        break;
+      case 'e':
+        periodEnd = optarg;
+        std::cout << "period end: " << periodEnd << std::endl;
+        break;
+      case 's':
+        periodStep = optarg;
+        std::cout << "period step: " << periodStep << std::endl;
+        break;
+      case 'n':
+        nodes = optarg;
+        std::cout << "nodes: " << nodes << std::endl;
+        break;
+      default:
+        abort();
+    }
+  }
+
+  if (arrangement != "SQUARE"
+      or periodInit.length() == 0
+      or periodEnd.length() == 0
+      or periodStep.length() == 0) {
+    std::cerr << "Wrong arguments. Exiting" << std::endl;
+    abort();
+  }
+
+  int ROWS, COLUMNS;
+  int P_STEP, P_MIN, P_MAX;
+
+  istringstream(nodes) >> ROWS;
+  istringstream(nodes) >> COLUMNS;
+
+  istringstream(periodEnd) >> P_MAX;
+  istringstream(periodInit) >> P_MIN;
+  istringstream(periodStep) >> P_STEP;
+
   Experiment experiment;
 
   std::cout << std::endl;
@@ -144,5 +197,5 @@ int main()
    *                                 *
    ***********************************/
 
-  experiment.start(UMIN, UMAX, USTEP, AVG_LEN, SIM_LEN);
+  experiment.start(P_MIN, P_STEP, P_MAX, SIM_LEN);
 }

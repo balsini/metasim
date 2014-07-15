@@ -41,7 +41,7 @@ public:
 
 class WifiLink : public Link
 {
-  std::vector<std::shared_ptr<WifiInterface>> _interfaces;
+  std::vector<WifiInterface *> _interfaces;
 
 public:
   WifiLink(const std::string &name);
@@ -49,10 +49,10 @@ public:
 
   virtual void send(std::unique_ptr<Message> & m);
 
-  void addInterface(const std::shared_ptr<WifiInterface> & i);
+  void addInterface(WifiInterface * i);
 
-  const std::shared_ptr<WifiInterface> getRightInterface();
-  const std::shared_ptr<WifiInterface> getDownInterface();
+  WifiInterface * getRightInterface();
+  WifiInterface * getDownInterface();
 };
 
 #endif

@@ -31,13 +31,13 @@ enum WifiInterfaceStatus {
 class NetInterface : public MetaSim::Entity
 {
 protected:
-  std::shared_ptr<Node> _node;
+  Node * _node;
 
 public:
-  NetInterface(const std::string &name, const std::shared_ptr<Node> &n);
+  NetInterface(const std::string &name, Node * n);
   virtual ~NetInterface();
 
-  virtual const std::shared_ptr<Node> node() = 0;
+  virtual Node * node() = 0;
   virtual void send(std::unique_ptr<Message> &m) = 0;
   virtual void receive(const std::shared_ptr<Message> &n) = 0;
 };
@@ -114,14 +114,14 @@ protected:
   int _c_w;
 
   std::shared_ptr<Message> _incoming_message;
-  std::shared_ptr<WifiLink> _link;
+  std::unique_ptr<WifiLink> _link;
 
   double _radius;
   WifiInterfaceStatus _status;
   int _corrupted_messages;
   bool _waitingForAck;
 
-  std::shared_ptr<MetaSim::TraceAscii> _wifiTrace;
+  MetaSim::TraceAscii * _wifiTrace;
 
   void status(WifiInterfaceStatus s);
 
@@ -158,13 +158,13 @@ public:
    */
   MetaSim::GEvent<WifiInterface> _wait_for_ACK_evt;
 
-  WifiInterface(const std::string &name, double radius, const std::shared_ptr<Node> &n);
+  WifiInterface(const std::string &name, double radius, Node * n);
   virtual ~WifiInterface();
 
-  void link(const std::shared_ptr<WifiLink> l) { _link = l; }
-  const std::shared_ptr<WifiLink> link() { return _link; }
+  void link(std::unique_ptr<WifiLink> l) { _link = std::move(l); }
+  WifiLink * link() { return _link.get(); }
   double radius() { return _radius; }
-  virtual const std::shared_ptr<Node> node() { return _node; }
+  virtual Node * node() { return _node; }
 
   virtual void onDIFSElapsed(MetaSim::Event * e);
   virtual void onSIFSElapsed(MetaSim::Event * e);
@@ -174,7 +174,7 @@ public:
   virtual void onACKTimeElapsed(MetaSim::Event * e);
   virtual void onBackoffTimeElapsed(MetaSim::Event * e);
 
-  const std::shared_ptr<WifiInterface> routingProtocol(Node * n);
+  WifiInterface * routingProtocol(Node * n);
   /**
    * Node calls this function, requesting the interface
    * to send the message.
@@ -190,7 +190,7 @@ public:
 
   std::string status2string(WifiInterfaceStatus s);
 
-  void addTrace(const std::shared_ptr<MetaSim::TraceAscii> &t) { _wifiTrace = t; }
+  void addTrace(MetaSim::TraceAscii * t) { _wifiTrace = t; }
   WifiInterfaceStatus status() { return _status; }
 
   void newRun();

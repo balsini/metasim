@@ -26,7 +26,7 @@
  ./netInterfaceTest2
  
  echo
- echo "\n\nnetInterface 3 Test\n\n"
+ echo "netInterface 3 Test"
  echo
  ./netInterfaceTest3
  
