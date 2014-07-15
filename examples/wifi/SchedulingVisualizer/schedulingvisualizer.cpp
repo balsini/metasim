@@ -4,6 +4,7 @@
 
 #include <QGraphicsTextItem>
 #include <QGraphicsRectItem>
+#include <QGraphicsSimpleTextItem>
 
 #include <QFile>
 
@@ -67,7 +68,9 @@ void SchedulingVisualizer::populateSceneWithFile(const QString &fileName, QGraph
       nodeVector.append(who);
       lastRectVector.append(nullptr);
       textDisalignVector.append(0);
-      scene.addSimpleText(who)->setPos(0 , (nodeVector.indexOf(who) + 1) * verticalSpace);
+      auto whoText = scene.addSimpleText(who);
+      whoText->setPos(0 , (nodeVector.indexOf(who) + 1) * verticalSpace);
+      whoText->setRotation(20);
     }
 
     scene.addSimpleText(event)->setPos(time + initialHorizontalSpace,
@@ -89,7 +92,7 @@ void SchedulingVisualizer::populateSceneWithFile(const QString &fileName, QGraph
 
     lastRectVector.replace(nodeVector.indexOf(who), newRect);
 
-    qDebug() << "At " << time << ", node " << who << " passed to " << event;
+    //qDebug() << "At " << time << ", node " << who << " passed to " << event;
   }
 
   for (auto lastRect : lastRectVector) {
