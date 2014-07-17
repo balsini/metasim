@@ -28,7 +28,8 @@ WifiInterface::WifiInterface(const std::string &name, double radius, Node * n) :
   _wait_for_backoff_evt(),
   _data_received_evt(),
   _end_trans_evt(),
-  _wait_for_SIFS_evt()
+  _wait_for_SIFS_evt(),
+  _collision_evt()
 {
   register_handler(_wait_for_DIFS_evt, this, &WifiInterface::onDIFSElapsed);
   register_handler(_wait_for_SIFS_evt, this, &WifiInterface::onSIFSElapsed);
@@ -388,6 +389,9 @@ void WifiInterface::receive(const std::shared_ptr<Message> &m)
       break;
 
     case RECEIVING_MESSAGE:
+      // Registering event for statistics
+      _collision_evt.post(SIMUL.getTime());
+
       // The previously transferring message is now corrupted, so:
       // A collision has been detected
       _collision_detected = true;
@@ -500,7 +504,7 @@ void WifiInterface::status(WifiInterfaceStatus s)
     //if (getName() == "Interface_Node_5_[3,1]") {
 
 
-/*
+    /*
     std::cout << ss.str();
 
       std::cout << "_end_trans_evt :\t";

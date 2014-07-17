@@ -62,7 +62,7 @@ public:
   void start(unsigned int period_i,
              unsigned int period_s,
              unsigned int period_e,
-             Tick SIM_LEN);
+             Tick SIM_LEN = INT64_MAX);
 
   const std::vector<std::unique_ptr<Node>> &nodes() { return _nodes; }
 };

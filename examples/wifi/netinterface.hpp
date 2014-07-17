@@ -157,6 +157,10 @@ public:
    * Waiting for destination to send back the ACK
    */
   MetaSim::GEvent<WifiInterface> _wait_for_ACK_evt;
+  /**
+   * Collision happened
+   */
+  MetaSim::GEvent<WifiInterface> _collision_evt;
 
   WifiInterface(const std::string &name, double radius, Node * n);
   virtual ~WifiInterface();

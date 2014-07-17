@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
       or periodEnd.length() == 0
       or periodStep.length() == 0) {
     std::cerr << "Wrong arguments. Exiting" << std::endl;
-    abort();
+    exit(1);
   }
 
   int ROWS, COLUMNS;
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
   std::cout << "\nCreating Nodes ..." << std::endl;
 
   //auto at = std::make_shared<ExponentialVar>(1000);
-  auto at = std::make_shared<UniformVar>(1,500);
+  auto at = std::make_shared<UniformVar>(1,5000);
 
   // First, generates the nodes inside the matrix
 

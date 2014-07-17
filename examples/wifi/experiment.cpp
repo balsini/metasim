@@ -1,6 +1,26 @@
 #include "experiment.hpp"
 
+#include <basestat.hpp>
+
 #include <sstream>
+
+class CollisionStat : public StatCount {
+public:
+  CollisionStat(const char * name) : StatCount(name) {}
+
+  void probe(Event *e) { record(1); }
+
+  void attach(Entity *e)
+  {
+    std::cout << "Added _collision_evt" << std::endl;
+
+    WifiInterface *l = dynamic_cast<WifiInterface *>(e);
+    if (l == NULL)
+      throw BaseExc("Please, specify a Ethernet Link!");
+
+    l->_collision_evt.addStat(this);
+  }
+};
 
 std::string int2string(int number)
 {
@@ -14,7 +34,6 @@ Experiment::Experiment() :
   nodeId(0)
 {
   std::cout << "Experiment created" << std::endl;
-  _interfacesTrace = std::make_shared<TraceAscii>("traces/experimentNetInterfacesTrace.txt");
 }
 
 Experiment::~Experiment()
@@ -169,10 +188,16 @@ void Experiment::start(unsigned int period_i,
   //CollisionStat stat("coll.txt");
   //stat.attach(&link);
 
+  std::cout << "Simulating ...\n" << std::endl;
+
+  //std::string statName = ;
+  CollisionStat stat("stats/collisions.txt");
+
   GnuPlotOutput output;
   output.init();
 
-  std::cout << "Simulating ...\n" << std::endl;
+  for (auto &o : _nodes)
+    stat.attach(o->netInterface());
 
   for (unsigned int p = period_i; p <= period_e; p += period_s) {
 
@@ -197,9 +222,9 @@ void Experiment::start(unsigned int period_i,
       for (auto &o : _nodes)
         o->netInterface()->addTrace(_interfacesTrace.get());
 
+      SIMUL.run(SIM_LEN, 10);
 
-      SIMUL.run(SIM_LEN, 1);
-
+      output.write(p);
       /*
       SIMUL.initSingleRun();
       SIMUL.run_to(182683);
@@ -212,4 +237,6 @@ void Experiment::start(unsigned int period_i,
       cout << e.what() << endl;
     }
   }
+
+
 }
