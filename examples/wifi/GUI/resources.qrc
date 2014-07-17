@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/logo_sssup.png</file>
+        <file>img/logo_unipi.png</file>
+        <file>img/nodeAddButton.png</file>
+    </qresource>
+</RCC>
