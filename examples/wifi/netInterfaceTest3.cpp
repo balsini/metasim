@@ -90,53 +90,65 @@ TEST_CASE( "netInterface Test, hidden terminal problem", "[netInterfaceHiddenTer
     REQUIRE( s2->netInterface()->status() == IDLE );
     REQUIRE( d->netInterface()->status() == IDLE );
 
-    SIMUL.sim_step();
+    SIMUL.run_to(11);
 
     REQUIRE( s1->netInterface()->status() == WAITING_FOR_DIFS );
     REQUIRE( s2->netInterface()->status() == IDLE );
     REQUIRE( d->netInterface()->status() == IDLE );
 
-    SIMUL.sim_step();
+    SIMUL.run_to(39);
 
     REQUIRE( s1->netInterface()->status() == SENDING_MESSAGE );
     REQUIRE( s2->netInterface()->status() == IDLE );
     REQUIRE( d->netInterface()->status() == RECEIVING_MESSAGE );
 
-    SIMUL.sim_step();
+    SIMUL.run_to(51);
 
     REQUIRE( s1->netInterface()->status() == SENDING_MESSAGE );
     REQUIRE( s2->netInterface()->status() == WAITING_FOR_DIFS );
     REQUIRE( d->netInterface()->status() == RECEIVING_MESSAGE );
 
-    SIMUL.sim_step();
+    SIMUL.run_to(79);
 
     REQUIRE( s1->netInterface()->status() == SENDING_MESSAGE );
     REQUIRE( s2->netInterface()->status() == SENDING_MESSAGE );
     REQUIRE( d->netInterface()->status() == RECEIVING_MESSAGE );
 
-    SIMUL.sim_step();
+    SIMUL.run_to(295);
 
     REQUIRE( s1->netInterface()->status() == WAITING_FOR_ACK );
     REQUIRE( s2->netInterface()->status() == SENDING_MESSAGE );
     REQUIRE( d->netInterface()->status() == RECEIVING_MESSAGE );
 
-    SIMUL.sim_step();
+    SIMUL.run_to(324);
 
     REQUIRE( s1->netInterface()->status() == WAITING_FOR_BACKOFF );
     REQUIRE( s2->netInterface()->status() == SENDING_MESSAGE );
     REQUIRE( d->netInterface()->status() == RECEIVING_MESSAGE );
 
-    SIMUL.sim_step();
-
-    REQUIRE( s1->netInterface()->status() == WAITING_FOR_BACKOFF );
-    REQUIRE( s2->netInterface()->status() == WAITING_FOR_ACK );
-    REQUIRE( d->netInterface()->status() == RECEIVING_MESSAGE );
-
-    SIMUL.sim_step();
+    SIMUL.run_to(335);
 
     REQUIRE( s1->netInterface()->status() == WAITING_FOR_BACKOFF );
     REQUIRE( s2->netInterface()->status() == WAITING_FOR_ACK );
     REQUIRE( d->netInterface()->status() == IDLE );
+
+    SIMUL.run_to(357);
+
+    REQUIRE( s1->netInterface()->status() == SENDING_MESSAGE );
+    REQUIRE( s2->netInterface()->status() == WAITING_FOR_ACK );
+    REQUIRE( d->netInterface()->status() == RECEIVING_MESSAGE );
+
+    SIMUL.run_to(364);
+
+    REQUIRE( s1->netInterface()->status() == SENDING_MESSAGE );
+    REQUIRE( s2->netInterface()->status() == WAITING_FOR_BACKOFF );
+    REQUIRE( d->netInterface()->status() == RECEIVING_MESSAGE );
+
+    SIMUL.run_to(378);
+
+    REQUIRE( s1->netInterface()->status() == SENDING_MESSAGE );
+    REQUIRE( s2->netInterface()->status() == SENDING_MESSAGE );
+    REQUIRE( d->netInterface()->status() == RECEIVING_MESSAGE );
 
     SIMUL.run_to(10000);
 
