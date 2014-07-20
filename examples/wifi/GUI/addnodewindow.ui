@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>466</width>
-    <height>349</height>
+    <width>391</width>
+    <height>436</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,6 +24,20 @@
        <string>Set of Nodes</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
+       <item row="9" column="1">
+        <widget class="QLabel" name="label_13">
+         <property name="text">
+          <string>Production Period MAX</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QLabel" name="label_17">
+         <property name="text">
+          <string>Production Period STEP</string>
+         </property>
+        </widget>
+       </item>
        <item row="3" column="0" colspan="2">
         <widget class="QTabWidget" name="tabNodeSetArrange">
          <property name="currentIndex">
@@ -185,13 +199,13 @@
        <item row="6" column="0">
         <widget class="QSpinBox" name="setNodePeriodMin">
          <property name="minimum">
-          <number>1</number>
+          <number>0</number>
          </property>
          <property name="maximum">
-          <number>99999</number>
+          <number>70000</number>
          </property>
          <property name="value">
-          <number>300</number>
+          <number>0</number>
          </property>
         </widget>
        </item>
@@ -201,10 +215,10 @@
           <number>1</number>
          </property>
          <property name="maximum">
-          <number>99999</number>
+          <number>70000</number>
          </property>
          <property name="value">
-          <number>300</number>
+          <number>250</number>
          </property>
         </widget>
        </item>
@@ -215,23 +229,10 @@
          </property>
         </widget>
        </item>
-       <item row="9" column="1">
-        <widget class="QLabel" name="label_13">
+       <item row="5" column="1">
+        <widget class="QLabel" name="label">
          <property name="text">
-          <string>Production Period MAX</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="0">
-        <widget class="QSpinBox" name="setNodePeriodMax">
-         <property name="minimum">
-          <number>2</number>
-         </property>
-         <property name="maximum">
-          <number>1000</number>
-         </property>
-         <property name="value">
-          <number>1000</number>
+          <string>Node Radius</string>
          </property>
         </widget>
        </item>
@@ -248,17 +249,43 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
-        <widget class="QLabel" name="label">
+       <item row="10" column="0">
+        <widget class="QCheckBox" name="setNodeTraces">
          <property name="text">
-          <string>Node Radius</string>
+          <string>netInterfaces traces activated</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
-        <widget class="QLabel" name="label_17">
+       <item row="9" column="0">
+        <widget class="QSpinBox" name="setNodePeriodMax">
+         <property name="minimum">
+          <number>0</number>
+         </property>
+         <property name="maximum">
+          <number>70000</number>
+         </property>
+         <property name="value">
+          <number>25000</number>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="0">
+        <widget class="QSpinBox" name="setNodeRuns">
+         <property name="minimum">
+          <number>3</number>
+         </property>
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="value">
+          <number>3</number>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="1">
+        <widget class="QLabel" name="label_18">
          <property name="text">
-          <string>Production Period STEP</string>
+          <string>Runs</string>
          </property>
         </widget>
        </item>

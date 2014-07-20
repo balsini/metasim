@@ -259,10 +259,14 @@ void MainWindow::on_actionRun_triggered()
                                      1;
 
   for (unsigned int i=0; i<numberOfExperiments; ++i) {
-    Experiment experiment;
+    Experiment experiment(experimentsetup.exp().traces);
 
     experimentmanager.generateExperiment(experimentsetup, i, &experiment);
-    experiment.start(experimentsetup.exp().periodMin, experimentsetup.exp().periodStep, experimentsetup.exp().periodMax);
+    experiment.start(i,
+                     experimentsetup.exp().periodMin,
+                     experimentsetup.exp().periodStep,
+                     experimentsetup.exp().periodMax,
+                     experimentsetup.exp().runs);
   }
 
   if (schedulingvisualizerwindow != nullptr)

@@ -30,6 +30,9 @@ class ExperimentSetup
     unsigned int periodMin;
     unsigned int periodStep;
     unsigned int periodMax;
+
+    bool traces;
+    unsigned int runs;
   };
 
   struct Node_t {
@@ -75,6 +78,15 @@ public:
       ss >> experiment.periodMin;
       ss >> experiment.periodStep;
       ss >> experiment.periodMax;
+      ss >> experiment.runs;
+
+      std::string tracesBoolean;
+      ss >> tracesBoolean;
+      if (tracesBoolean == "true")
+        experiment.traces = true;
+      if (tracesBoolean == "false")
+        experiment.traces = false;
+
       experiment.size = experiment.sideMax - experiment.sideMin + 1;
     }
   }

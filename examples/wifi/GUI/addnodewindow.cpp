@@ -49,7 +49,14 @@ void AddNodeWindow::generateSquareNodes()
       << ui->setNodeRadius->value() << ' '
       << ui->setNodePeriodMin->value() << ' '
       << ui->setNodePeriodStep->value() << ' '
-      << ui->setNodePeriodMax->value() << '\n';
+      << ui->setNodePeriodMax->value() << ' '
+      << ui->setNodeRuns->value() << ' ';
+
+  if (ui->setNodeTraces->isChecked())
+    experimentParameters << "true";
+  else
+    experimentParameters << "false";
+  experimentParameters << '\n';
 
   experiment->parseParameters(experimentParameters.str());
 }
