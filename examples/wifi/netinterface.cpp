@@ -158,7 +158,7 @@ void WifiInterface::onDIFSElapsed(MetaSim::Event * e)
   if (_collision_detected) {
     _collision_detected = false;
     /*
-    std::cout << this->getName() << ": Collision detected, managing backoff!"
+    //std::cout << this->getName() << ": Collision detected, managing backoff!"
               << std::endl;
 */
 
@@ -365,7 +365,7 @@ void WifiInterface::trySend()
 void WifiInterface::receive(const std::shared_ptr<Message> &m)
 {
   /*
-  std::cout << this->getName() << ": Incoming communication from "
+  //std::cout << this->getName() << ": Incoming communication from "
             << m->sourceInterface()->getName() << std::endl;
 */
 
@@ -387,7 +387,8 @@ void WifiInterface::receive(const std::shared_ptr<Message> &m)
 
     case RECEIVING_MESSAGE:
       // Registering event for statistics
-      _collisionStat->record(1);
+      if (_collisionStat != nullptr)
+        _collisionStat->record(1);
 
       // The previously transferring message is now corrupted, so:
       // A collision has been detected
@@ -492,7 +493,7 @@ void WifiInterface::status(WifiInterfaceStatus s)
     //if (getName() == "Interface_Node_5_[3,1]") {
 
 
-    /*
+/*
     std::stringstream ss;
 
     ss << SIMUL.getTime()
