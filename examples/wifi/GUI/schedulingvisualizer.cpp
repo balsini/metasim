@@ -64,7 +64,7 @@ void SchedulingVisualizer::populateSceneWithFile(const QString &fileName, QGraph
     in >> who;
     in >> event;
 
-    if (time == 0 and event == "" and who == "")
+    if (in.atEnd())
       break;
 
     if (nodeVector.indexOf(who) == -1) {

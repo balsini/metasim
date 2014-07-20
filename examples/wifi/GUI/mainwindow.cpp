@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
   centralwidget = nullptr;
   visualizerwindow = nullptr;
   schedulingvisualizerwindow = nullptr;
+  statisticsvisualizerwindow = nullptr;
   aboutwindow = nullptr;
   toolbar = nullptr;
   addnodewindow = nullptr;
@@ -254,6 +255,16 @@ void MainWindow::on_actionRun_triggered()
     QFile::remove(dir.path() + "/" + o);
   }
 
+  QStringList filters2;
+  filters << "*.dat";
+  QDir dir2;
+  dir2.cd(dir.currentPath() + "/stats");
+
+  for (auto o : dir2.entryList(filters)) {
+    //qDebug() << "Removing file: " << dir.path() + "/" + o;
+    QFile::remove(dir2.path() + "/" + o);
+  }
+
   unsigned int numberOfExperiments = experimentsetup.exp().sideMax -
                                      experimentsetup.exp().sideMin +
                                      1;
@@ -290,6 +301,13 @@ void MainWindow::on_actionRun_triggered()
     schedulingvisualizerwindow = new SchedulingVisualizer(experimentsetup, m, this);
     this->addDockWidget(Qt::TopDockWidgetArea, schedulingvisualizerwindow);
   }
+
+  if (statisticsvisualizerwindow != nullptr) {
+    delete statisticsvisualizerwindow;
+    statisticsvisualizerwindow = nullptr;
+  }
+  statisticsvisualizerwindow = new StatisticsVisualizer(this);
+  this->addDockWidget(Qt::BottomDockWidgetArea, statisticsvisualizerwindow);
 
   ui->actionGraphics_Visualizer->setEnabled(true);
   ui->actionNetInterfaces_Trace->setEnabled(true);

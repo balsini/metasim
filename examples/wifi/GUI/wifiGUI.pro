@@ -21,7 +21,8 @@ SOURCES  += \
     centralwidget.cpp \
     experimentsetup.cpp \
     experimentmanager.cpp \
-    schedulingvisualizer.cpp
+    schedulingvisualizer.cpp \
+    statisticsvisualizer.cpp
 
 HEADERS  += \
     addnodewindow.hpp \
@@ -32,7 +33,8 @@ HEADERS  += \
     centralwidget.hpp \
     experimentsetup.hpp \
     experimentmanager.hpp \
-    schedulingvisualizer.hpp
+    schedulingvisualizer.hpp \
+    statisticsvisualizer.hpp
 
 FORMS    += mainwindow.ui \
     addnodewindow.ui \

@@ -11,6 +11,7 @@
 #include "addnodewindow.hpp"
 #include "experimentsetup.hpp"
 #include "experimentmanager.hpp"
+#include "statisticsvisualizer.hpp"
 
 #include <experiment.hpp>
 
@@ -27,6 +28,7 @@ class MainWindow : public QMainWindow
   CentralWidget * centralwidget;
   Visualizer * visualizerwindow;
   SchedulingVisualizer * schedulingvisualizerwindow;
+  StatisticsVisualizer * statisticsvisualizerwindow;
   AboutWindow * aboutwindow;
   ToolBar * toolbar;
   AddNodeWindow * addnodewindow;
