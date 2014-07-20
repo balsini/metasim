@@ -161,6 +161,8 @@ void MainWindow::on_experimentChanged()
 
   centralwidget->append("Experiment configuration generated");
 
+  if (visualizerwindow != nullptr)
+    delete visualizerwindow;
   visualizerwindow = new Visualizer(experimentsetup, this);
   this->addDockWidget(Qt::RightDockWidgetArea/*Qt::AllDockWidgetAreas*/, visualizerwindow);
 

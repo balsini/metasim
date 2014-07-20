@@ -32,7 +32,7 @@ Visualizer::Visualizer(ExperimentSetup & e, QWidget *parent) :
 void Visualizer::generateTreeWidget()
 {
   treewidget.setColumnCount(1);
-  treewidget.setHeaderLabel("View");
+  treewidget.setHeaderLabel("Experiment View");
   treewidget.setMaximumWidth(110);
   treewidget.setMinimumWidth(110);
   /*
