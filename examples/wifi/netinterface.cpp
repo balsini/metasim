@@ -36,6 +36,7 @@ WifiInterface::WifiInterface(const std::string &name, double radius, Node * n) :
   register_handler(_wait_for_ACK_evt, this, &WifiInterface::onACKTimeElapsed);
   register_handler(_wait_for_backoff_evt, this, &WifiInterface::onBackoffTimeElapsed);
 
+  _wifiTrace = nullptr;
   _radius = radius;
   _c_w = _c_wMin;
 }
@@ -489,7 +490,7 @@ void WifiInterface::status(WifiInterfaceStatus s)
 
   _status = s;
 
-  if (_wifiTrace) {
+  if (_wifiTrace != nullptr) {
     //if (getName() == "Interface_Node_5_[3,1]") {
 
 

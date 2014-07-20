@@ -36,7 +36,7 @@ class Experiment
   void createLink(const std::string &name, WifiInterface * n_int);
 
 public:
-  Experiment(bool traces = false);
+  Experiment(bool traces);
   ~Experiment();
 
   /**
