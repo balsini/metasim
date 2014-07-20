@@ -59,9 +59,11 @@ public:
   /**
    * Prepares all the data and starts the experiment
    */
-  void start(unsigned int period_i,
+  void start(unsigned int id,
+             unsigned int period_i,
              unsigned int period_s,
              unsigned int period_e,
+             unsigned int runs = 3,
              Tick SIM_LEN = INT64_MAX);
 
   const std::vector<std::unique_ptr<Node>> &nodes() { return _nodes; }

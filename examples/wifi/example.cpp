@@ -23,11 +23,12 @@ int main(int argc, char *argv[])
   std::string periodInit;
   std::string periodEnd;
   std::string periodStep;
+  std::string runs;
   bool traces = false;
   int c;
 
   opterr = 0;
-  while ((c = getopt(argc, argv, "a:n:i:e:s:t")) != -1) {
+  while ((c = getopt(argc, argv, "a:n:i:e:s:r:t")) != -1) {
     switch (c)
     {
       case 'a': // Arrangement
@@ -54,6 +55,10 @@ int main(int argc, char *argv[])
         traces = true;
         std::cout << "traces activated: " << nodes << std::endl;
         break;
+      case 'r':
+        runs = optarg;
+        std::cout << "number of runs: " << runs << std::endl;
+        break;
       default:
         abort();
     }
@@ -62,10 +67,15 @@ int main(int argc, char *argv[])
   if (arrangement != "SQUARE"
       or periodInit.length() == 0
       or periodEnd.length() == 0
-      or periodStep.length() == 0) {
+      or periodStep.length() == 0
+      or runs.length() == 0) {
     std::cerr << "Wrong arguments. Exiting" << std::endl;
     exit(1);
   }
+
+  unsigned int RUNS;
+
+  istringstream(runs) >> RUNS;
 
   int ROWS, COLUMNS;
   int P_STEP, P_MIN, P_MAX;
@@ -200,5 +210,5 @@ int main(int argc, char *argv[])
    *                                 *
    ***********************************/
 
-  experiment.start(P_MIN, P_STEP, P_MAX, SIM_LEN);
+  experiment.start(0, P_MIN, P_STEP, P_MAX, RUNS, SIM_LEN);
 }

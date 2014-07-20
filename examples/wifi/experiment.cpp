@@ -2,8 +2,6 @@
 
 #include <sstream>
 
-#define RUN_NUM 5
-
 std::string int2string(int number)
 {
   std::stringstream ss;
@@ -160,9 +158,11 @@ Source * Experiment::addNode(std::pair<double, double> p, double radius, const s
   return n;
 }
 
-void Experiment::start(unsigned int period_i,
+void Experiment::start(unsigned int id,
+                       unsigned int period_i,
                        unsigned int period_s,
                        unsigned int period_e,
+                       unsigned int runs,
                        Tick SIM_LEN)
 {
   generateLinks();
@@ -170,7 +170,11 @@ void Experiment::start(unsigned int period_i,
   std::cout << "Simulating ...\n" << std::endl;
 
   //std::string statName = ;
-  CollisionStat stat("stats/collisions.txt");
+  std::stringstream ss;
+  ss << "stats/collisions_"
+        << id
+        << ".dat";
+  CollisionStat stat(ss.str().c_str());
 
   GnuPlotOutput output;
   output.init();
@@ -200,12 +204,12 @@ void Experiment::start(unsigned int period_i,
         for (auto &o : _nodes)
           o->netInterface()->addTrace(&interfacesTrace);
 
-        SIMUL.run(SIM_LEN, RUN_NUM);
+        SIMUL.run(SIM_LEN, runs);
         output.write(p);
 
         interfacesTrace.close();
       } else {
-        SIMUL.run(SIM_LEN, RUN_NUM);
+        SIMUL.run(SIM_LEN, runs);
         output.write(p);
       }
     } catch (BaseExc &e) {
