@@ -27,7 +27,7 @@ TEST_CASE( "netInterface Test, forwarding verification", "[netInterfaceForwardin
    * has to be sent to N and then forwarded to D.
    */
 
-  auto interfacesTrace = std::make_shared<TraceAscii>("traces/netInterfacesTrace4.txt");
+  auto interfacesTrace = std::unique_ptr<WifiTrace>(new WifiTrace("traces/netInterfacesTrace4"));
 
   std::vector<double> times{10};
 

@@ -2,8 +2,6 @@
 
 #include <metasim.hpp>
 
-#include <sstream>
-
 #include "link.hpp"
 #include "message.hpp"
 #include "netinterface.hpp"
@@ -28,8 +26,7 @@ WifiInterface::WifiInterface(const std::string &name, double radius, Node * n) :
   _wait_for_backoff_evt(),
   _data_received_evt(),
   _end_trans_evt(),
-  _wait_for_SIFS_evt(),
-  _collision_evt()
+  _wait_for_SIFS_evt()
 {
   register_handler(_wait_for_DIFS_evt, this, &WifiInterface::onDIFSElapsed);
   register_handler(_wait_for_SIFS_evt, this, &WifiInterface::onSIFSElapsed);
@@ -390,7 +387,7 @@ void WifiInterface::receive(const std::shared_ptr<Message> &m)
 
     case RECEIVING_MESSAGE:
       // Registering event for statistics
-      _collision_evt.post(SIMUL.getTime());
+      _collisionStat->record(1);
 
       // The previously transferring message is now corrupted, so:
       // A collision has been detected
@@ -492,6 +489,10 @@ void WifiInterface::status(WifiInterfaceStatus s)
   _status = s;
 
   if (_wifiTrace) {
+    //if (getName() == "Interface_Node_5_[3,1]") {
+
+
+    /*
     std::stringstream ss;
 
     ss << SIMUL.getTime()
@@ -501,55 +502,52 @@ void WifiInterface::status(WifiInterfaceStatus s)
        << status2string(status())
        << std::endl;
 
-    //if (getName() == "Interface_Node_5_[3,1]") {
-
-
-    /*
     std::cout << ss.str();
 
-      std::cout << "_end_trans_evt :\t";
-      if (_end_trans_evt.isInQueue()) std::cout << "ON";
-      else std::cout << "OFF";
-      std::cout << std::endl;
 
-      std::cout << "_start_trans_evt :\t";
-      if (_start_trans_evt.isInQueue()) std::cout << "ON";
-      else std::cout << "OFF";
-      std::cout << std::endl;
+    std::cout << "_end_trans_evt :\t";
+    if (_end_trans_evt.isInQueue()) std::cout << "ON";
+    else std::cout << "OFF";
+    std::cout << std::endl;
 
-      std::cout << "_wait_for_DIFS_evt :\t";
-      if (_wait_for_DIFS_evt.isInQueue()) std::cout << "ON";
-      else std::cout << "OFF";
-      std::cout << std::endl;
+    std::cout << "_start_trans_evt :\t";
+    if (_start_trans_evt.isInQueue()) std::cout << "ON";
+    else std::cout << "OFF";
+    std::cout << std::endl;
 
-      std::cout << "_wait_for_SIFS_evt :\t";
-      if (_wait_for_SIFS_evt.isInQueue()) std::cout << "ON";
-      else std::cout << "OFF";
-      std::cout << std::endl;
+    std::cout << "_wait_for_DIFS_evt :\t";
+    if (_wait_for_DIFS_evt.isInQueue()) std::cout << "ON";
+    else std::cout << "OFF";
+    std::cout << std::endl;
 
-      std::cout << "_data_received_evt :\t";
-      if (_data_received_evt.isInQueue()) std::cout << "ON";
-      else std::cout << "OFF";
-      std::cout << std::endl;
+    std::cout << "_wait_for_SIFS_evt :\t";
+    if (_wait_for_SIFS_evt.isInQueue()) std::cout << "ON";
+    else std::cout << "OFF";
+    std::cout << std::endl;
 
-      std::cout << "_end_ACKtrans_evt :\t";
-      if (_end_ACKtrans_evt.isInQueue()) std::cout << "ON";
-      else std::cout << "OFF";
-      std::cout << std::endl;
+    std::cout << "_data_received_evt :\t";
+    if (_data_received_evt.isInQueue()) std::cout << "ON";
+    else std::cout << "OFF";
+    std::cout << std::endl;
 
-      std::cout << "_wait_for_ACK_evt :\t";
-      if (_wait_for_ACK_evt.isInQueue()) std::cout << "ON";
-      else std::cout << "OFF";
-      std::cout << std::endl;
+    std::cout << "_end_ACKtrans_evt :\t";
+    if (_end_ACKtrans_evt.isInQueue()) std::cout << "ON";
+    else std::cout << "OFF";
+    std::cout << std::endl;
 
-      std::cout << "_wait_for_backoff_evt :\t";
-      if (_wait_for_backoff_evt.isInQueue()) std::cout << "ON";
-      else std::cout << "OFF";
-      std::cout << std::endl;
-      */
+    std::cout << "_wait_for_ACK_evt :\t";
+    if (_wait_for_ACK_evt.isInQueue()) std::cout << "ON";
+    else std::cout << "OFF";
+    std::cout << std::endl;
+
+    std::cout << "_wait_for_backoff_evt :\t";
+    if (_wait_for_backoff_evt.isInQueue()) std::cout << "ON";
+    else std::cout << "OFF";
+    std::cout << std::endl;
+    */
     //}
 
-    _wifiTrace->record(ss.str().c_str());
+    _wifiTrace->record(SIMUL.getTime(), getName(), status2string(status()));
   }
 }
 

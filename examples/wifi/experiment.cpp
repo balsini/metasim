@@ -1,26 +1,8 @@
 #include "experiment.hpp"
 
-#include <basestat.hpp>
-
 #include <sstream>
 
-class CollisionStat : public StatCount {
-public:
-  CollisionStat(const char * name) : StatCount(name) {}
-
-  void probe(Event *e) { record(1); }
-
-  void attach(Entity *e)
-  {
-    std::cout << "Added _collision_evt" << std::endl;
-
-    WifiInterface *l = dynamic_cast<WifiInterface *>(e);
-    if (l == NULL)
-      throw BaseExc("Please, specify a Ethernet Link!");
-
-    l->_collision_evt.addStat(this);
-  }
-};
+#define RUN_NUM 5
 
 std::string int2string(int number)
 {
@@ -30,9 +12,10 @@ std::string int2string(int number)
   return ss.str();
 }
 
-Experiment::Experiment() :
+Experiment::Experiment(bool traces) :
   nodeId(0)
 {
+  _traces = traces;
   std::cout << "Experiment created" << std::endl;
 }
 
@@ -184,10 +167,6 @@ void Experiment::start(unsigned int period_i,
 {
   generateLinks();
 
-
-  //CollisionStat stat("coll.txt");
-  //stat.attach(&link);
-
   std::cout << "Simulating ...\n" << std::endl;
 
   //std::string statName = ;
@@ -197,7 +176,7 @@ void Experiment::start(unsigned int period_i,
   output.init();
 
   for (auto &o : _nodes)
-    stat.attach(o->netInterface());
+    o->netInterface()->addStat(&stat);
 
   for (unsigned int p = period_i; p <= period_e; p += period_s) {
 
@@ -212,27 +191,23 @@ void Experiment::start(unsigned int period_i,
     try {
       cout << "Period = " << p << endl;
 
-      std::string traceName = "traces/experimentNetInterfacesTrace";
+      if (_traces) {
+        std::string traceName = "traces/experimentNetInterfacesTrace";
+        traceName.append("_-aSQUARE_-n" + int2string(_nodes.size()) + "_-p" + int2string(p));
 
-      traceName.append("_-aSQUARE_-n" + int2string(_nodes.size()) + "_-p" + int2string(p));
-      traceName.append(".txt");
+        WifiTrace interfacesTrace(traceName.c_str());
 
-      _interfacesTrace = std::unique_ptr<TraceAscii>(new TraceAscii(traceName.c_str()));
+        for (auto &o : _nodes)
+          o->netInterface()->addTrace(&interfacesTrace);
 
-      for (auto &o : _nodes)
-        o->netInterface()->addTrace(_interfacesTrace.get());
+        SIMUL.run(SIM_LEN, RUN_NUM);
+        output.write(p);
 
-      SIMUL.run(SIM_LEN, 10);
-
-      output.write(p);
-      /*
-      SIMUL.initSingleRun();
-      SIMUL.run_to(182683);
-      SIMUL.endSingleRun();
-*/
-
-      _interfacesTrace->close();
-      //output.write(u);
+        interfacesTrace.close();
+      } else {
+        SIMUL.run(SIM_LEN, RUN_NUM);
+        output.write(p);
+      }
     } catch (BaseExc &e) {
       cout << e.what() << endl;
     }

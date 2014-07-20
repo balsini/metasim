@@ -27,7 +27,7 @@ TEST_CASE( "netInterface Test, simple communication", "[netInterfaceCommunicatio
    * consumes it.
    */
 
-  auto interfacesTrace = std::unique_ptr<TraceAscii>(new TraceAscii("traces/netInterfacesTrace1.txt"));
+  auto interfacesTrace = std::unique_ptr<WifiTrace>(new WifiTrace("traces/netInterfacesTrace1"));
 
   auto period = std::make_shared<DeltaVar>(100);
   std::vector<double> times{10};

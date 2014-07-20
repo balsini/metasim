@@ -32,7 +32,7 @@ TEST_CASE( "netInterface Test, hidden terminal problem", "[netInterfaceHiddenTer
    * simply lost.
    */
 
-  auto interfacesTrace = std::make_shared<TraceAscii>("traces/netInterfacesTrace3.txt");
+  auto interfacesTrace = std::unique_ptr<WifiTrace>(new WifiTrace("traces/netInterfacesTrace3"));
 
   std::vector<double> times{10, 50};
 

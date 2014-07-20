@@ -13,8 +13,8 @@
 class Experiment
 {
   unsigned int nodeId;
+  bool _traces;
   std::vector<std::unique_ptr<Node>> _nodes;
-  std::shared_ptr<TraceAscii> _interfacesTrace;
   /**
    * For each node, checks if other nodes are in range.
    * The neighbours are added to the node link,
@@ -36,7 +36,7 @@ class Experiment
   void createLink(const std::string &name, WifiInterface * n_int);
 
 public:
-  Experiment();
+  Experiment(bool traces = false);
   ~Experiment();
 
   /**

@@ -33,7 +33,7 @@ TEST_CASE( "netInterface Test, multiple access control protocol", "[netInterface
    * so they will try to avoid collisions.
    */
 
-  auto interfacesTrace = std::make_shared<TraceAscii>("traces/netInterfacesTrace2.txt");
+  auto interfacesTrace = std::unique_ptr<WifiTrace>(new WifiTrace("traces/netInterfacesTrace2"));
 
   std::vector<double> times{10, 20, 70};
 

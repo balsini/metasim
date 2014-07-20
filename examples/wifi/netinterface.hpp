@@ -4,8 +4,10 @@
 #include <memory>
 #include <deque>
 #include <string>
+#include <sstream>
 
 #include <metasim.hpp>
+#include <basestat.hpp>
 #include <trace.hpp>
 
 #include "message.hpp"
@@ -16,6 +18,65 @@
 class WifiLink;
 
 #define _ETHINTER_DBG "WifiInterface"
+
+class CollisionStat : public MetaSim::StatCount {
+public:
+  CollisionStat(const char * name) : MetaSim::StatCount(name) {}
+};
+
+class WifiTrace {
+  std::unique_ptr<MetaSim::TraceAscii> _trace;
+  MetaSim::Tick lastTick;
+  std::string name;
+  unsigned int counter;
+
+public:
+  WifiTrace(const char * n) :
+    name(n),
+    counter(0)
+  {
+    std::stringstream ss;
+    ss << name
+       << "_"
+       << counter
+       << ".txt";
+
+    lastTick = MetaSim::Tick(0);
+    _trace = std::unique_ptr<MetaSim::TraceAscii>(new MetaSim::TraceAscii(ss.str().c_str()));
+  }
+
+  void record(const MetaSim::Tick & when, const std::string & who, const std::string &  what)
+  {
+    if (when < lastTick) {
+      counter++;
+      close();
+
+      std::stringstream ss;
+      ss << name
+         << "_"
+         << counter
+         << ".txt";
+      _trace = std::unique_ptr<MetaSim::TraceAscii>(new MetaSim::TraceAscii(ss.str().c_str()));
+    }
+
+    lastTick = when;
+
+    std::stringstream ss;
+    ss << lastTick
+       << "\t"
+       << who
+       << "\t"
+       << what
+       << std::endl;
+
+    _trace->record(ss.str().c_str());
+  }
+
+  void close()
+  {
+    _trace->close();
+  }
+};
 
 enum WifiInterfaceStatus {
   IDLE,
@@ -121,7 +182,8 @@ protected:
   int _corrupted_messages;
   bool _waitingForAck;
 
-  MetaSim::TraceAscii * _wifiTrace;
+  WifiTrace * _wifiTrace;
+  CollisionStat * _collisionStat;
 
   void status(WifiInterfaceStatus s);
 
@@ -157,10 +219,6 @@ public:
    * Waiting for destination to send back the ACK
    */
   MetaSim::GEvent<WifiInterface> _wait_for_ACK_evt;
-  /**
-   * Collision happened
-   */
-  MetaSim::GEvent<WifiInterface> _collision_evt;
 
   WifiInterface(const std::string &name, double radius, Node * n);
   virtual ~WifiInterface();
@@ -194,7 +252,8 @@ public:
 
   std::string status2string(WifiInterfaceStatus s);
 
-  void addTrace(MetaSim::TraceAscii * t) { _wifiTrace = t; }
+  void addStat(CollisionStat * c) { _collisionStat = c; }
+  void addTrace(WifiTrace * t) { _wifiTrace = t; }
   WifiInterfaceStatus status() { return _status; }
 
   void newRun();

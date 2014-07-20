@@ -13,8 +13,6 @@
 
 using namespace MetaSim;
 
-
-
 const unsigned AVG_LEN = 800;
 const Tick SIM_LEN = (int) (AVG_LEN * 10000);
 
@@ -25,10 +23,11 @@ int main(int argc, char *argv[])
   std::string periodInit;
   std::string periodEnd;
   std::string periodStep;
+  bool traces = false;
   int c;
 
   opterr = 0;
-  while ((c = getopt(argc, argv, "a:n:i:e:s:")) != -1) {
+  while ((c = getopt(argc, argv, "a:n:i:e:s:t")) != -1) {
     switch (c)
     {
       case 'a': // Arrangement
@@ -50,6 +49,10 @@ int main(int argc, char *argv[])
       case 'n':
         nodes = optarg;
         std::cout << "nodes: " << nodes << std::endl;
+        break;
+      case 't':
+        traces = true;
+        std::cout << "traces activated: " << nodes << std::endl;
         break;
       default:
         abort();
@@ -74,7 +77,7 @@ int main(int argc, char *argv[])
   istringstream(periodInit) >> P_MIN;
   istringstream(periodStep) >> P_STEP;
 
-  Experiment experiment;
+  Experiment experiment(traces);
 
   std::cout << std::endl;
   std::cout << "\\¯¯\\    /¯¯/ (  )  |¯¯¯¯¯¯| (  )\n";

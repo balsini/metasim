@@ -15,7 +15,7 @@ using namespace MetaSim;
 
 TEST_CASE( "Node Test", "[node]" )
 {
-  auto interfacesTrace = std::unique_ptr<TraceAscii>(new TraceAscii("traces/netInterfacesTraceNode.txt"));
+  auto interfacesTrace = std::unique_ptr<WifiTrace>(new WifiTrace("traces/netInterfacesTraceNode"));
 
   auto at = std::make_shared<DeltaVar>(1);
   auto period = std::make_shared<DeltaVar>(1);
