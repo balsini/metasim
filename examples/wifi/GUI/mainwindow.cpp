@@ -282,8 +282,14 @@ void MainWindow::on_actionRun_triggered()
   m["WAITING_FOR_SIFS"] = Qt::darkYellow;
   m["WAITING_FOR_BACKOFF"] = Qt::blue;
 
-  schedulingvisualizerwindow = new SchedulingVisualizer(experimentsetup, m, this);
-  this->addDockWidget(Qt::TopDockWidgetArea, schedulingvisualizerwindow);
+  if (schedulingvisualizerwindow != nullptr) {
+    delete schedulingvisualizerwindow;
+    schedulingvisualizerwindow = nullptr;
+  }
+  if (experimentsetup.exp().traces) {
+    schedulingvisualizerwindow = new SchedulingVisualizer(experimentsetup, m, this);
+    this->addDockWidget(Qt::TopDockWidgetArea, schedulingvisualizerwindow);
+  }
 
   ui->actionGraphics_Visualizer->setEnabled(true);
   ui->actionNetInterfaces_Trace->setEnabled(true);
