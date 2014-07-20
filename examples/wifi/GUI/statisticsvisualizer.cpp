@@ -1,9 +1,35 @@
 #include "statisticsvisualizer.hpp"
 
 #include <QGraphicsLineItem>
+#include <QGraphicsTextItem>
 
 #include <QDir>
 #include <QDebug>
+
+double max_value(std::map<unsigned int, std::pair<double, double>>::iterator first,
+                 std::map<unsigned int, std::pair<double, double>>::iterator last,
+                 const bool firstElement)
+{
+  if (firstElement) {
+    if (first == last)
+      return last->first;
+    double largest = first->first;
+
+    while (++first != last)
+      if (largest < first->first)    // or: if (comp(*largest,*first)) for version (2)
+        largest = first->first;
+    return largest;
+  }
+  if (first == last)
+    return std::get<0>(last->second);
+  double largest = std::get<0>(first->second);
+
+  while (++first != last)
+    if (largest < std::get<0>(first->second))    // or: if (comp(*largest,*first)) for version (2)
+      largest = std::get<0>(first->second);
+  return largest;
+
+}
 
 StatisticsVisualizer::StatisticsVisualizer(QWidget *parent) :
   QDockWidget(parent)
@@ -77,11 +103,40 @@ void StatisticsVisualizer::populateScene(QGraphicsScene &scene)
 {
   scene.clear();
 
-  QGraphicsLineItem * xAxis = scene.addLine(0, 0, view->width(), 0);
-  xAxis->setPos(0, view->height()-40);
+  const unsigned int scrollBarDisplacement = 30;
+  const unsigned int axisDisplacement = 60;
+  const unsigned int xTextDisplacement = 20;
+  const unsigned int yTextDisplacement = 20;
+  const unsigned int textHeight = 12;
 
-  QGraphicsLineItem * yAxis = scene.addLine(0, 0, 0, view->height());
-  yAxis->setPos(40, 0);
+  auto xAxis = scene.addLine(0, 0, view->width() - scrollBarDisplacement, 0);
+  xAxis->setPos(0, view->height() - scrollBarDisplacement - axisDisplacement);
+
+  auto yAxis = scene.addLine(0, 0, 0, view->height() - scrollBarDisplacement);
+  yAxis->setPos(axisDisplacement - scrollBarDisplacement, 0);
+
+  double maxY = max_value(values.begin(), values.end(), false);
+  qDebug() << "maxY: " << maxY;
+
+  double maxX = max_value(values.begin(), values.end(), true);
+  qDebug() << "maxX: " << maxX;
+
+  // Y axis numbers
+  for (unsigned int i=0; i<=(view->height() - axisDisplacement); i+=yTextDisplacement) {
+    unsigned int textValue = (double)i/(view->height() - axisDisplacement) * maxY;
+    qDebug() << "i: " << textValue;
+    auto yNumber = scene.addSimpleText(QString::number(textValue));
+    yNumber->setPos(0, (view->height() - axisDisplacement) - i - textHeight / 2);
+  }
+
+  // X axis numbers
+  for (unsigned int i=0; i<=(view->width() - axisDisplacement); i+=xTextDisplacement) {
+    unsigned int textValue = (double)i/(view->width() - axisDisplacement) * maxX;
+    qDebug() << "i: " << textValue;
+    auto xNumber = scene.addSimpleText(QString::number(textValue));
+    xNumber->setPos(i + axisDisplacement, view->height() - axisDisplacement);
+    xNumber->setRotation(45);
+  }
 }
 
 void StatisticsVisualizer::loadStatistics(const QString &fileName)
@@ -94,6 +149,8 @@ void StatisticsVisualizer::loadStatistics(const QString &fileName)
   unsigned int time;
   double mean;
   double conf_int;
+
+  values.clear();
 
   QTextStream in(&schedFile);
   in.readLine();
