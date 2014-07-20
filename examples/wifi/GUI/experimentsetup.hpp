@@ -46,17 +46,6 @@ class ExperimentSetup
 
 public:
   ExperimentSetup();
-  /*
-  void addNode(NodeKind_t kind, double posX, double posY, double range)
-  {
-    Node_t n;
-    n.kind = kind;
-    n.posX = posX;
-    n.posY = posY;
-    n.range = range;
-    nodevector.push_back(n);
-  }
-  */
 
   void parseParameters(const std::string &s)
   {
@@ -106,7 +95,15 @@ public:
          << experiment.range << ' '
          << experiment.periodMin << ' '
          << experiment.periodStep << ' '
-         << experiment.periodMax << '\n';
+         << experiment.periodMax << ' '
+         << experiment.runs << ' ';
+
+      if (experiment.traces == true)
+        ss << "true";
+      else
+        ss << "false";
+
+      ss << '\n';
     }
 
     qDebug() << "Writing to file: " << ss.str().c_str();
