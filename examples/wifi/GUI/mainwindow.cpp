@@ -256,6 +256,12 @@ QAction ** MainWindow::getActionShowTraces()
 
 void MainWindow::on_actionRun_triggered()
 {
+  QDir tmpdir;
+  if (not QDir(tmpdir.currentPath() + "/traces").exists())
+    QDir().mkdir(tmpdir.currentPath() + "/traces");
+  if (not QDir(tmpdir.currentPath() + "/stats").exists())
+    QDir().mkdir(tmpdir.currentPath() + "/stats");
+
   QStringList filters;
   filters << "*.txt";
   QDir dir;
