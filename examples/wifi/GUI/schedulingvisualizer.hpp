@@ -17,9 +17,9 @@ class SchedulingVisualizer : public QDockWidget
   QHBoxLayout mainWidgetLayout;
   QTreeWidget treewidget;
 
-  std::map<QString, QColor> colorMap;
+  QString _directory;
 
-  ExperimentSetup * experiment;
+  std::map<QString, QColor> colorMap;
 
   QGraphicsScene * scene;
   QGraphicsView * view;
@@ -33,8 +33,8 @@ private slots:
   void on_ExperimentChanged(QTreeWidgetItem*,int);
 
 public:
-  SchedulingVisualizer(ExperimentSetup &e, QWidget *parent = 0);
-  SchedulingVisualizer(ExperimentSetup &e, const std::map<QString, QColor> &m, QWidget *parent = 0);
+  SchedulingVisualizer(const QString &directory, QWidget *parent = 0);
+  SchedulingVisualizer(const QString &directory, const std::map<QString, QColor> &m, QWidget *parent = 0);
 };
 
 #endif // SCHEDULINKVISUALIZER_HPP

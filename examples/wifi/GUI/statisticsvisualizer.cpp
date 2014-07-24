@@ -31,8 +31,9 @@ double max_value(std::map<unsigned int, std::pair<double, double>>::iterator fir
 
 }
 
-StatisticsVisualizer::StatisticsVisualizer(QWidget *parent) :
-  QDockWidget(parent)
+StatisticsVisualizer::StatisticsVisualizer(const QString & directory, QWidget *parent) :
+  QDockWidget(parent),
+  _directory(directory)
 {
   this->setWindowTitle("Statistics Plots");
 
@@ -50,6 +51,9 @@ StatisticsVisualizer::StatisticsVisualizer(QWidget *parent) :
 
   mainWidget.setLayout(&mainWidgetLayout);
 
+  QBrush sceneBGBrush(Qt::yellow, Qt::CrossPattern);
+  scene->setBackgroundBrush(sceneBGBrush);
+
   connect(&treewidget,
           SIGNAL(itemClicked(QTreeWidgetItem*,int)),
           this,
@@ -58,9 +62,8 @@ StatisticsVisualizer::StatisticsVisualizer(QWidget *parent) :
 
 void StatisticsVisualizer::resizeEvent(QResizeEvent * event)
 {
-  if (treewidget.selectedItems().size() > 0) {
+  if (treewidget.selectedItems().size() > 0)
     populateScene(*scene);
-  }
 }
 
 void StatisticsVisualizer::generateTreeWidget()
@@ -70,8 +73,7 @@ void StatisticsVisualizer::generateTreeWidget()
   treewidget.setMaximumWidth(150);
   treewidget.setMinimumWidth(150);
 
-  QDir dir;
-  dir.cd(QDir::currentPath() + "/stats");
+  QDir dir(_directory);
 
   QStringList filters;
   filters << "*.dat";
@@ -83,20 +85,8 @@ void StatisticsVisualizer::generateTreeWidget()
 
   for (auto o : dir.entryList(filters))
     items.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("%1").arg(o))));
-  //  qDebug() << o;
-
-  /*
-  unsigned int experimentNum = experiment->exp().sideMax - experiment->exp().sideMin + 1;
-  for (unsigned int i=0; i<experimentNum; ++i) {
-    items.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("%1").arg(i))));
-
-    unsigned int counter = 0;
-    for (unsigned int j=experiment->exp().periodMin; j<=experiment->exp().periodMax; j+=experiment->exp().periodStep)
-      items.last()->addChild(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("%1").arg(counter++))));
-  }*/
 
   treewidget.insertTopLevelItems(0, items);
-  //treewidget.setCurrentItem(items.first());
 }
 
 void StatisticsVisualizer::populateScene(QGraphicsScene &scene)
@@ -110,21 +100,23 @@ void StatisticsVisualizer::populateScene(QGraphicsScene &scene)
   const unsigned int textHeight = 12;
 
   auto xAxis = scene.addLine(0, 0, view->width() - scrollBarDisplacement, 0);
-  xAxis->setPos(0, view->height() - scrollBarDisplacement - axisDisplacement);
+  xAxis->setPos(0,
+                view->height() - axisDisplacement);
 
   auto yAxis = scene.addLine(0, 0, 0, view->height() - scrollBarDisplacement);
-  yAxis->setPos(axisDisplacement - scrollBarDisplacement, 0);
+  yAxis->setPos(axisDisplacement - scrollBarDisplacement,
+                0);
 
   double maxY = max_value(values.begin(), values.end(), false);
-  qDebug() << "maxY: " << maxY;
+  //qDebug() << "maxY: " << maxY;
 
   double maxX = max_value(values.begin(), values.end(), true);
-  qDebug() << "maxX: " << maxX;
+  //qDebug() << "maxX: " << maxX;
 
   // Y axis numbers
   for (unsigned int i=0; i<=(view->height() - axisDisplacement); i+=yTextDisplacement) {
     unsigned int textValue = (double)i/(view->height() - axisDisplacement) * maxY;
-    qDebug() << "i: " << textValue;
+    //qDebug() << "i: " << textValue;
     auto yNumber = scene.addSimpleText(QString::number(textValue));
     yNumber->setPos(0, (view->height() - axisDisplacement) - i - textHeight / 2);
   }
@@ -132,10 +124,23 @@ void StatisticsVisualizer::populateScene(QGraphicsScene &scene)
   // X axis numbers
   for (unsigned int i=0; i<=(view->width() - axisDisplacement); i+=xTextDisplacement) {
     unsigned int textValue = (double)i/(view->width() - axisDisplacement) * maxX;
-    qDebug() << "i: " << textValue;
+    //qDebug() << "i: " << textValue;
     auto xNumber = scene.addSimpleText(QString::number(textValue));
-    xNumber->setPos(i + axisDisplacement, view->height() - axisDisplacement);
+    xNumber->setPos(i + axisDisplacement - scrollBarDisplacement + textHeight / 2,
+                    view->height() - axisDisplacement);
     xNumber->setRotation(45);
+  }
+
+  QPen pointPen(Qt::SolidLine);
+  QBrush pointBrush(Qt::green, Qt::SolidPattern);
+  const double pointRadius = 3;
+
+  for (auto o : values) {
+    double yPos = view->height() - axisDisplacement - std::get<0>(o.second) / maxY * (view->height() - axisDisplacement);
+    auto it = scene.addEllipse(0, 0, pointRadius * 2, pointRadius * 2, pointPen, pointBrush);
+    //qDebug() << yPos;
+    it->setPos(o.first / maxX * (view->width() - axisDisplacement) + axisDisplacement - scrollBarDisplacement,
+               yPos - pointRadius);
   }
 }
 
@@ -168,6 +173,6 @@ void StatisticsVisualizer::loadStatistics(const QString &fileName)
 
 void StatisticsVisualizer::on_ExperimentChanged(QTreeWidgetItem * item, int column)
 {
-  loadStatistics(QDir::currentPath() + "/stats/" + item->text(0));
+  loadStatistics(_directory + "/" + item->text(0));
   populateScene(*scene);
 }

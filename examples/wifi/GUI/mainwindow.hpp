@@ -36,7 +36,6 @@ class MainWindow : public QMainWindow
   QString filename;
 
   ExperimentSetup experimentsetup;
-  ExperimentManager experimentmanager;
 
   //std::shared_ptr<Experiment> experiment;
 
@@ -51,6 +50,8 @@ private slots:
   void on_actionNew_triggered();
 
   void on_actionRun_triggered();
+
+  void on_actionNetInterfaces_Trace_triggered();
 
 public:
   explicit MainWindow(QWidget *parent = 0);

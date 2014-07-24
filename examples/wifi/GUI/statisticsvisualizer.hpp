@@ -17,6 +17,8 @@ class StatisticsVisualizer : public QDockWidget
 
   std::map<unsigned int, std::pair<double, double>> values;
 
+  QString _directory;
+
   QWidget mainWidget;
   QHBoxLayout mainWidgetLayout;
   QTreeWidget treewidget;
@@ -33,7 +35,7 @@ private slots:
   void on_ExperimentChanged(QTreeWidgetItem*,int);
 
 public:
-  StatisticsVisualizer(QWidget *parent = 0);
+  StatisticsVisualizer(const QString & directory, QWidget *parent = 0);
 };
 
 #endif // STATISTICSVISUALIZER_HPP

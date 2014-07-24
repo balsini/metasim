@@ -216,6 +216,4 @@ void Experiment::start(unsigned int id,
       cout << e.what() << endl;
     }
   }
-
-
 }

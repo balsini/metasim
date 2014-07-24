@@ -388,8 +388,10 @@ void WifiInterface::receive(const std::shared_ptr<Message> &m)
 
     case RECEIVING_MESSAGE:
       // Registering event for statistics
-      if (_collisionStat != nullptr)
+      if (_collisionStat != nullptr) {
+        //std::cout << "Collision happened!" << std::endl;
         _collisionStat->record(1);
+      }
 
       // The previously transferring message is now corrupted, so:
       // A collision has been detected

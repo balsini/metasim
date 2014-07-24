@@ -1,13 +1,10 @@
 #include "experimentmanager.hpp"
 
-ExperimentManager::ExperimentManager()
-{
-}
-
-void ExperimentManager::generateExperiment(ExperimentSetup e_setup, unsigned int experimentIndex, Experiment * experiment)
+void generateExperiment(ExperimentSetup e_setup, unsigned int experimentIndex, Experiment * experiment)
 {
   if (e_setup.exp().kind == SQUARE) {
-    auto at = std::make_shared<UniformVar>(1,500);
+    //auto at = std::make_shared<ExponentialVar>(1000);
+    auto at = std::make_shared<UniformVar>(1,2000);
 
     int COLUMNS = e_setup.exp().sideMin + experimentIndex;
     int ROWS = COLUMNS;

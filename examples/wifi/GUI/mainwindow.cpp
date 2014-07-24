@@ -55,7 +55,18 @@ void MainWindow::updateTitle()
 
 void MainWindow::on_actionGraphics_Visualizer_triggered()
 {
-  visualizerwindow->show();
+  QString chosenFolder = QFileDialog::getExistingDirectory(
+                           this,
+                           tr("Open Directory"),
+                           "./"
+                           );
+  if (chosenFolder != "") {
+    if (statisticsvisualizerwindow != nullptr)
+      delete statisticsvisualizerwindow;
+
+    statisticsvisualizerwindow = new StatisticsVisualizer(chosenFolder, this);
+    this->addDockWidget(Qt::BottomDockWidgetArea, statisticsvisualizerwindow);
+  }
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -272,16 +283,20 @@ void MainWindow::on_actionRun_triggered()
   for (unsigned int i=0; i<numberOfExperiments; ++i) {
     Experiment experiment(experimentsetup.exp().traces);
 
-    experimentmanager.generateExperiment(experimentsetup, i, &experiment);
+    qDebug() << "Running Experiment: "
+             << i << ' '
+             << experimentsetup.exp().periodMin << ' '
+             << experimentsetup.exp().periodStep << ' '
+             << experimentsetup.exp().periodMax << ' '
+             << experimentsetup.exp().runs;
+
+    generateExperiment(experimentsetup, i, &experiment);
     experiment.start(i,
                      experimentsetup.exp().periodMin,
                      experimentsetup.exp().periodStep,
                      experimentsetup.exp().periodMax,
                      experimentsetup.exp().runs);
   }
-
-  if (schedulingvisualizerwindow != nullptr)
-    delete schedulingvisualizerwindow;
 
   std::map<QString, QColor> m;
   m["IDLE"] = Qt::white;
@@ -298,7 +313,7 @@ void MainWindow::on_actionRun_triggered()
     schedulingvisualizerwindow = nullptr;
   }
   if (experimentsetup.exp().traces) {
-    schedulingvisualizerwindow = new SchedulingVisualizer(experimentsetup, m, this);
+    schedulingvisualizerwindow = new SchedulingVisualizer(QDir::currentPath() + "/traces/", m, this);
     this->addDockWidget(Qt::TopDockWidgetArea, schedulingvisualizerwindow);
   }
 
@@ -306,9 +321,32 @@ void MainWindow::on_actionRun_triggered()
     delete statisticsvisualizerwindow;
     statisticsvisualizerwindow = nullptr;
   }
-  statisticsvisualizerwindow = new StatisticsVisualizer(this);
+  statisticsvisualizerwindow = new StatisticsVisualizer(QDir::currentPath() + "/stats/", this);
   this->addDockWidget(Qt::BottomDockWidgetArea, statisticsvisualizerwindow);
+}
 
-  ui->actionGraphics_Visualizer->setEnabled(true);
-  ui->actionNetInterfaces_Trace->setEnabled(true);
+void MainWindow::on_actionNetInterfaces_Trace_triggered()
+{
+  QString chosenFolder = QFileDialog::getExistingDirectory(
+                           this,
+                           tr("Open Directory"),
+                           "./"
+                           );
+  if (chosenFolder != "") {
+    if (schedulingvisualizerwindow != nullptr)
+      delete schedulingvisualizerwindow;
+
+    std::map<QString, QColor> m;
+    m["IDLE"] = Qt::white;
+    m["SENDING_MESSAGE"] = Qt::green;
+    m["RECEIVING_MESSAGE"] = Qt::red;
+    m["SENDING_ACK"] = Qt::yellow;
+    m["WAITING_FOR_ACK"] = Qt::gray;
+    m["WAITING_FOR_DIFS"] = Qt::darkGreen;
+    m["WAITING_FOR_SIFS"] = Qt::darkYellow;
+    m["WAITING_FOR_BACKOFF"] = Qt::blue;
+
+    schedulingvisualizerwindow = new SchedulingVisualizer(chosenFolder, m, this);
+    this->addDockWidget(Qt::TopDockWidgetArea, schedulingvisualizerwindow);
+  }
 }

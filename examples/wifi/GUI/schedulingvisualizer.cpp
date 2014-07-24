@@ -108,18 +108,18 @@ void SchedulingVisualizer::populateSceneWithFile(const QString &fileName, QGraph
   schedFile.close();
 }
 
-SchedulingVisualizer::SchedulingVisualizer(ExperimentSetup &e, QWidget *parent) :
+SchedulingVisualizer::SchedulingVisualizer(const QString & directory, QWidget *parent) :
   QDockWidget(parent),
-  experiment(&e)
+  _directory(directory)
 {
   generateContent();
 }
 
-SchedulingVisualizer::SchedulingVisualizer(ExperimentSetup &e,
+SchedulingVisualizer::SchedulingVisualizer(const QString &directory,
                                            const std::map<QString, QColor> &m,
                                            QWidget *parent) :
   QDockWidget(parent),
-  experiment(&e)
+  _directory(directory)
 {
   colorMap = m;
   generateContent();
@@ -130,7 +130,6 @@ void SchedulingVisualizer::generateContent()
   this->setWindowTitle("Nodes Traces");
 
   scene = new QGraphicsScene(this);
-  //populateSceneWithFile(fileName, *scene);
 
   view = new QGraphicsView(scene);
 
@@ -151,7 +150,7 @@ void SchedulingVisualizer::generateContent()
 
 void SchedulingVisualizer::on_ExperimentChanged(QTreeWidgetItem * item, int column)
 {
-  populateSceneWithFile(QDir::currentPath() + "/traces/" + item->text(0),
+  populateSceneWithFile(_directory + "/" + item->text(0),
                         *scene);
 }
 
@@ -162,8 +161,7 @@ void SchedulingVisualizer::generateTreeWidget()
   treewidget.setMaximumWidth(400);
   treewidget.setMinimumWidth(400);
 
-  QDir dir;
-  dir.cd(QDir::currentPath() + "/traces");
+  QDir dir(_directory);
 
   QStringList filters;
   filters << "*.txt";

@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
   std::cout << "\nCreating Nodes ..." << std::endl;
 
   //auto at = std::make_shared<ExponentialVar>(1000);
-  auto at = std::make_shared<UniformVar>(1,5000);
+  auto at = std::make_shared<UniformVar>(500,2000);
 
   // First, generates the nodes inside the matrix
 
@@ -209,6 +209,14 @@ int main(int argc, char *argv[])
    *     Running the experiment      *
    *                                 *
    ***********************************/
+
+  std::cout << "Running Experiment: "
+            << 0 << ' '
+            << P_MIN << ' '
+            << P_STEP << ' '
+            << P_MAX << ' '
+            << RUNS
+            << std::endl;
 
   experiment.start(0, P_MIN, P_STEP, P_MAX, RUNS, SIM_LEN);
 }
