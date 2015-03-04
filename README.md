@@ -65,6 +65,8 @@ You should obtain a metasim directory.
 The steps to build and install the software are the usual ones:
 
     cd metasim
+    automake --add-missing
+    autoreconf
     ./configure
     make
     make check 
